@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="windows-1252" standalone="no"?>
+<jardesc>
+    <jar path="C:/Users/Ricardo/Desktop/hnr.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/Hanged/HN2.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="true" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" mainClassHandleIdentifier="=Hanged/src&lt;gui{Principal.java[Principal" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="true">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
+        <file path="/Hanged/.classpath"/>
+        <file path="/Hanged/.project"/>
+        <javaElement handleIdentifier="=Hanged/src"/>
+    </selectedElements>
+</jardesc>

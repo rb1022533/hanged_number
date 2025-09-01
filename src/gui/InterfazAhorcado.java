@@ -3,6 +3,9 @@ package gui;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+
+import logic.NumerosDiezMenos;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.event.MouseAdapter;
@@ -20,15 +23,20 @@ import java.util.stream.Collectors;
 
 public class InterfazAhorcado extends JFrame {
 	private JTable tablaNumeros;
+	private int hoveredRow = -1;
+	private int hoveredCol = -1;
 	private DefaultTableModel modeloTabla;
-	private boolean[][] seleccionados;
+	private boolean[][] seleccionados = new boolean[10][10]; // Esto crea la matriz 10x10;
 	private JTextArea areaResultados;
 	private JTextArea areaHistorial;
 	private JButton botonReiniciar;
+	private JButton botonVerMenosDiez;
 	private Set<Integer> numerosAhorcados = new HashSet<>();
 	private Set<Integer> numerosAhorcadosAdicionales = new HashSet<>();
 	private TablaEventHandler handler;
 	private Set<String> combinacionesProcesadas = new HashSet<>();
+	
+	
 
 	// Para los estilos
 	private final Color COLOR_PRIMARIO = new Color(45, 52, 54); // Gris oscuro profesional
@@ -69,18 +77,18 @@ public class InterfazAhorcado extends JFrame {
 //		setIconImage(icono.getImage());\
 		// Inicializar logicaJuego primero
 
-		JLabel lblSubtitleTabla = new JLabel("Tabla Numérica");
+		JLabel lblSubtitleTabla = new JLabel("SELECCIÓN NUMÉRICA");
 		lblSubtitleTabla.setHorizontalAlignment(SwingConstants.LEFT);
 		lblSubtitleTabla.setFont(new Font("Arial", Font.BOLD, 18));
 		lblSubtitleTabla.setForeground(COLOR_PRIMARIO);
-		lblSubtitleTabla.setBounds(10, 50, 360, 34);
+		lblSubtitleTabla.setBounds(10, 50, 360, 25);
 		add(lblSubtitleTabla);
 
-		JLabel lblSubtituloHistorial = new JLabel("Historial de Resultados");
+		JLabel lblSubtituloHistorial = new JLabel("RESULTADOS");
 		lblSubtituloHistorial.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblSubtituloHistorial.setFont(new Font("Arial", Font.BOLD, 18));
 		lblSubtituloHistorial.setForeground(COLOR_PRIMARIO);
-		lblSubtituloHistorial.setBounds(0, 50, 680, 34);
+		lblSubtituloHistorial.setBounds(0, 50, 600, 25);
 		add(lblSubtituloHistorial);
 
 //		JLabel lblSubtituloResultados = new JLabel("Resultados_Última Selección");
@@ -99,6 +107,20 @@ public class InterfazAhorcado extends JFrame {
 			}
 		};
 		tablaNumeros = new JTable(modeloTabla);
+		
+		tablaNumeros.addMouseMotionListener(new MouseMotionAdapter() {
+		    @Override
+		    public void mouseMoved(MouseEvent e) {
+		        int row = tablaNumeros.rowAtPoint(e.getPoint());
+		        int col = tablaNumeros.columnAtPoint(e.getPoint());
+
+		        if (row != hoveredRow || col != hoveredCol) {
+		            hoveredRow = row;
+		            hoveredCol = col;
+		            tablaNumeros.repaint();
+		        }
+		    }
+		});
 
 		tablaNumeros.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
 				"seleccionarCelda");
@@ -173,6 +195,38 @@ public class InterfazAhorcado extends JFrame {
 				((JLabel) this).setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 				((JLabel) this).setHorizontalAlignment(JLabel.CENTER);
 				((JLabel) this).setVerticalAlignment(JLabel.CENTER);
+				
+				// Fondo base
+				if (row == hoveredRow && column == hoveredCol && !table.isCellSelected(row, column)) {
+				    setBackground(new Color(230, 230, 250));
+				} else {
+				    setBackground(Color.WHITE);
+				}
+
+				// Hover
+				if (row == hoveredRow && column == hoveredCol && !table.isCellSelected(row, column)) {
+				    setBackground(new Color(230, 230, 250));
+				}
+
+				// Selección
+				if (seleccionados[row][column]) {
+				    setBackground(COLOR_ACENTO);
+				    setForeground(COLOR_FONDO);
+				}
+				
+				// Obtener la posición actual del mouse
+				Point mousePos = table.getMousePosition();
+				if (mousePos != null) {
+				    int hoveredRow = table.rowAtPoint(mousePos);
+				    int hoveredCol = table.columnAtPoint(mousePos);
+
+				    // Si el mouse está sobre esta celda, cambiar el fondo
+				    if (hoveredRow == row && hoveredCol == column) {
+				        setBackground(new Color(230, 230, 250)); // color suave para hover
+				    }
+				}
+				
+				setBackground(Color.WHITE); // o tu COLOR_FONDO
 
 				// Obtener posición actual del mouse
 				Point mousePosition = table.getMousePosition();
@@ -211,6 +265,7 @@ public class InterfazAhorcado extends JFrame {
 				return this;
 			}
 		});
+		
 
 		tablaNumeros.setFocusTraversalKeysEnabled(true);
 		tablaNumeros.setFocusable(true);
@@ -277,20 +332,57 @@ public class InterfazAhorcado extends JFrame {
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				botonReiniciar.setBackground(new Color(114, 142, 225));
+				botonReiniciar.setBackground(COLOR_PRIMARIO);
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
 				botonReiniciar.setBackground(COLOR_ACENTO);
 			}
+			
+			
 		});
+		
+		botonVerMenosDiez = new JButton("Ver -10");
+		botonVerMenosDiez.setFont(new Font("Arial", Font.BOLD, 14));
+		botonVerMenosDiez.setBackground(COLOR_ACENTO);
+		botonVerMenosDiez.setForeground(COLOR_FONDO);
+		botonVerMenosDiez.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+		
+		// Hover
+		botonVerMenosDiez.addMouseListener(new java.awt.event.MouseAdapter() {
+		    @Override
+		    public void mouseEntered(java.awt.event.MouseEvent evt) {
+		        botonVerMenosDiez.setBackground(COLOR_PRIMARIO); // cambia al color hover
+		    }
+		    @Override
+		    public void mouseExited(java.awt.event.MouseEvent evt) {
+		        botonVerMenosDiez.setBackground(COLOR_ACENTO); // vuelve al color original
+		    }
+		    
+		});
+		
+		botonVerMenosDiez.addActionListener(e -> {
+		    // Combinar los números seleccionados
+			Set<Integer> seleccionados = obtenerNumerosSeleccionados();
+		    Set<Integer> menosDiez = new HashSet<>();
 
+		    
+		    if (seleccionados.isEmpty()) {
+		        JOptionPane.showMessageDialog(this, "No hay números seleccionados.", "Atención", JOptionPane.WARNING_MESSAGE);
+		        return;
+		    }
+
+		    // Abrir la ventana MostrarMenosDiez, que ya hace la lógica de "menos diez"
+		    new MostrarMenosDiez(seleccionados).setVisible(true);
+		});
+		
 		botonReiniciar.registerKeyboardAction(e -> botonReiniciar.doClick(),
 				KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED);
 
 		JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		panelBotones.setBackground(COLOR_FONDO);
+		panelBotones.add(botonVerMenosDiez);
 		panelBotones.add(botonReiniciar);
 
 		// Organizar componentes en el frame
@@ -309,6 +401,8 @@ public class InterfazAhorcado extends JFrame {
 		getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, COLOR_BORDE));
 
 	}
+	
+	
 	
 	private Set<Integer> numerosIgnorados = new HashSet<>();
 
@@ -602,6 +696,24 @@ public class InterfazAhorcado extends JFrame {
 
 		return null;
 	}
+	
+	/**
+	 * Devuelve todos los números que el usuario ha seleccionado en la tabla.
+	 */
+	private Set<Integer> obtenerNumerosSeleccionados() {
+	    Set<Integer> seleccionadosUsuario = new HashSet<>();
+	    for (int fila = 0; fila < 10; fila++) {
+	        for (int col = 0; col < 10; col++) {
+	            if (seleccionados[fila][col]) { // ← tu matriz de selección
+	                Object valor = tablaNumeros.getValueAt(fila, col);
+	                if (valor instanceof Integer) {
+	                    seleccionadosUsuario.add((Integer) valor);
+	                }
+	            }
+	        }
+	    }
+	    return seleccionadosUsuario;
+	}
 
 	private boolean seleccionadoEnTablero(int numero) {
 		int fila = (numero - 1) / 10;
@@ -692,7 +804,6 @@ public class InterfazAhorcado extends JFrame {
 				Integer num1 = numeros.get(i);
 				Integer num2 = numeros.get(j);
 				
-				
 
 //				if (num1 == null || num2 == null || num1.equals(num2) || numerosAhorcados.contains(num1)
 //						|| numerosAhorcados.contains(num2)) {
@@ -743,6 +854,10 @@ public class InterfazAhorcado extends JFrame {
 					 if (!combinacionValida || ahorcadoPrincipal == null || numerosIgnorados.contains(ahorcadoPrincipal)) {
 					     continue;
 					 }
+					 
+					    
+
+					
 				} else if (esDiagonalExtendida) {
 					if (mismaFila || mismaColumna || diagonalDescendente) {
 						continue;
@@ -772,13 +887,12 @@ public class InterfazAhorcado extends JFrame {
 					}
 
 					StringBuilder resultado = new StringBuilder();
-					resultado.append("Combinación: " + num1).append(", ").append(num2).append("\n")
-							.append("Número ahorcado: ").append(ahorcadoPrincipal);
+					resultado.append("Combinación: " + num1).append(" - ").append(num2).append("; Número ahorcado: (").append(ahorcadoPrincipal).append(")");
 
 					if (combinacionValida && ahorcadoPrincipal != null && !numerosAhorcados.contains(ahorcadoPrincipal)) {
 					    numerosAhorcados.add(ahorcadoPrincipal);
 					}
-
+					
 					List<Integer> nuevos = encontrarNumerosAhorcadosAdicionales(num1, num2, numeros,
 							numerosAhorcadosAdicionales);
 					for (Integer numero : nuevos) {
@@ -852,13 +966,12 @@ public class InterfazAhorcado extends JFrame {
 					}
 
 					StringBuilder resultado = new StringBuilder();
-					resultado.append("==> Combinación: ").append(num1).append(", ").append(num2)
-							.append(" | Ahorcado adicional:");
+					resultado.append("Ahorcado adicional: ");
 
 					boolean tieneDatos = false;
 					if (ahorcadoFilaExtendida != null && !num1.equals(ahorcadoFilaExtendida)
 							&& !num2.equals(ahorcadoFilaExtendida)) {
-						resultado.append(" ").append(ahorcadoFilaExtendida);
+						resultado.append(" (").append(ahorcadoFilaExtendida).append(")");
 						tieneDatos = true;
 					}
 					for (Integer numero : nuevos) {
@@ -875,7 +988,7 @@ public class InterfazAhorcado extends JFrame {
 						if (areaHistorial != null) {
 							String historial = areaHistorial.getText();
 							if (!historial.isEmpty())
-								historial += "\n\n";
+								historial += "\n";
 							historial += resultado.toString();
 							areaHistorial.setText(historial);
 							SwingUtilities.invokeLater(() -> {
@@ -937,8 +1050,7 @@ public class InterfazAhorcado extends JFrame {
 				}
 
 				StringBuilder resultado = new StringBuilder();
-				resultado.append("Combinación: ").append(num1).append(", ").append(num2).append("\n")
-						.append("Número ahorcado: ").append(ahorcadoPrincipal);
+				resultado.append("Combinación: ").append(num1).append(" - ").append(num2).append("; Número ahorcado: (").append(ahorcadoPrincipal).append(")");
 
 				if (combinacionValida && ahorcadoPrincipal != null && !numerosAhorcados.contains(ahorcadoPrincipal)) {
 				    numerosAhorcados.add(ahorcadoPrincipal);

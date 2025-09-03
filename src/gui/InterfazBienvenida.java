@@ -13,10 +13,10 @@ import javax.imageio.ImageIO;
 import javax.print.DocFlavor.URL;
 
 public class InterfazBienvenida extends JFrame {
-	private final Color COLOR_PRIMARIO = new Color(45, 52, 54); // Gris oscuro profesional
-	private final Color COLOR_SECUNDARIO = new Color(149, 165, 166); // Gris medio suave
-	private final Color COLOR_ACENTO = new Color(65, 105, 225); // Azul profesional
-	private final Color COLOR_FONDO = new Color(242, 242, 242); // Blanco suave
+	private final Color COLOR_PRIMARIO = new Color(37, 99, 235); //  Azul  
+	private final Color COLOR_ACENTO = new Color(30, 58, 138); //  Hover   
+	private final Color COLOR_FONDO = new Color(243, 244, 246); // Fondo gris claro
+	private final Color COLOR_TEXTO = new Color(17, 24, 39);    // Texto normal
 	private BufferedImage imagenFondo;
 
 	public InterfazBienvenida() {
@@ -63,13 +63,15 @@ public class InterfazBienvenida extends JFrame {
 		// Título del juego
 		JLabel titulo = new JLabel("Hanged Number");
 		titulo.setFont(new Font("Arial", Font.BOLD, 38));
-		titulo.setForeground(COLOR_PRIMARIO);
+		titulo.setForeground(COLOR_TEXTO
+				
+				);
 		titulo.setHorizontalAlignment(JLabel.LEFT);
 
 		// Botón para comenzar el juego
 		JButton botonComenzar = new JButton("Comenzar");
 		botonComenzar.setFont(new Font("Arial", Font.BOLD, 16));
-		botonComenzar.setBackground(COLOR_ACENTO);
+		botonComenzar.setBackground(COLOR_PRIMARIO);
 		botonComenzar.setForeground(COLOR_FONDO);
 		botonComenzar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 		botonComenzar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -80,12 +82,12 @@ public class InterfazBienvenida extends JFrame {
 		botonComenzar.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				botonComenzar.setBackground(COLOR_PRIMARIO); // Azul más claro
+				botonComenzar.setBackground(COLOR_ACENTO); // Azul más claro
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				botonComenzar.setBackground(COLOR_ACENTO);
+				botonComenzar.setBackground(COLOR_PRIMARIO);
 			}
 		});
 
@@ -129,8 +131,8 @@ public class InterfazBienvenida extends JFrame {
 		SwingUtilities.invokeLater(() -> botonComenzar.requestFocusInWindow());
 	}
 
-	private void setIconImage(String file) {
-		// TODO Auto-generated method stub
-
-	}
+//	private void setIconImage(String file) {
+//		// TODO Auto-generated method stub
+//
+//	}
 }

@@ -1,30 +1,81 @@
 package logic;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
+import gui.InterfazAhorcado;
+
 /**
- * Clase de lÛgica para calcular los n˙meros que son diez menos entre un conjunto de n˙meros.
+ * Clase de l√≥gica para calcular los n√∫meros que son diez menos entre un conjunto de n√∫meros.
  */
 public class NumerosDiezMenos {
+    private int numeroBase;          
+    private int numeroDiezMenos;     
+    private String combinacion; 
+    
+    public NumerosDiezMenos(int numeroBase, String combinacion) {
+        this.numeroBase = numeroBase;
+        this.numeroDiezMenos = numeroBase - 10;
+        this.combinacion = combinacion;
+    }
 
-    /**
-     * Calcula los n˙meros que son 10 menos que cualquier otro n˙mero en el conjunto.
-     * 
-     * @param numerosSeleccionados conjunto de n˙meros seleccionados
-     * @return conjunto de n˙meros que cumplen la condiciÛn (sin duplicados)
-     */
-    public static Set<Integer> obtenerMenosDiez(Set<Integer> numerosSeleccionados) {
-        Set<Integer> menosDiez = new HashSet<>();
+    public int getNumeroBase() {
+        return numeroBase;
+    }
 
+    public int getNumeroDiezMenos() {
+        return numeroDiezMenos;
+    }
+
+    public String getCombinacion() {
+        return combinacion;
+    }
+
+    @Override
+    public String toString() {
+        return "No. diez menos: " + numeroDiezMenos +
+               "      Referencia: " + numeroBase +
+               "      Combinaci√≥n: " + combinacion;
+    }
+
+    // üîπ Aqu√≠ va el m√©todo que me preguntabas
+    public static Set<NumerosDiezMenos> obtenerMenosDiez(Set<Integer> numerosSeleccionados) {
+    	
+        Set<NumerosDiezMenos> resultado = new HashSet<>();
+        
         for (Integer sel : numerosSeleccionados) {
             for (Integer otro : numerosSeleccionados) {
                 if (!sel.equals(otro) && (sel - 10 == otro || sel + 10 == otro)) {
-                    menosDiez.add(Math.min(sel, otro)); // agrega el menor de ambos
+                    int menor = Math.min(sel, otro); // el "diez menos" real (ya seleccionado)
+                    int mayor = Math.max(sel, otro); // el n√∫mero de referencia
+                    
+                    // ‚ö†Ô∏è aqu√≠ deber√≠as obtener la combinaci√≥n real asociada a "mayor"
+                    String combinacion = "(-)";
+                    
+                    resultado.add(new NumerosDiezMenos(mayor, combinacion));
                 }
             }
         }
 
-        return menosDiez;
+        return resultado;
+    }
+    
+    
+    //Evita que salga duplicado el resultado.
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NumerosDiezMenos)) return false;
+        NumerosDiezMenos otro = (NumerosDiezMenos) o;
+        return numeroBase == otro.numeroBase &&
+               numeroDiezMenos == otro.numeroDiezMenos;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(numeroBase, numeroDiezMenos);
     }
 }

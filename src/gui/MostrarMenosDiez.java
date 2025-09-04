@@ -52,8 +52,8 @@ public class MostrarMenosDiez extends JFrame {
         scrollPaneArea.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPaneArea.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         
-        scrollPaneArea.getVerticalScrollBar().setPreferredSize(new Dimension(8, Integer.MAX_VALUE)); // ancho vertical
-        scrollPaneArea.getHorizontalScrollBar().setPreferredSize(new Dimension(Integer.MAX_VALUE, 8)); // alto horizontal
+        scrollPaneArea.getVerticalScrollBar().setPreferredSize(new Dimension(4, Integer.MAX_VALUE)); // ancho vertical
+        scrollPaneArea.getHorizontalScrollBar().setPreferredSize(new Dimension(Integer.MAX_VALUE, 4)); // alto horizontal
 
         // Aplicar el scroll moderno
         scrollPaneArea.getVerticalScrollBar().setUI(new ModernScrollBarUI());

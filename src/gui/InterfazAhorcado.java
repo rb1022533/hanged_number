@@ -214,8 +214,7 @@ public class InterfazAhorcado extends JFrame {
 				// Números ahorcados
 				else if (value instanceof Integer) {
 					Integer numero = (Integer) value;
-					if ((numerosAhorcados.contains(numero) || numerosAhorcadosAdicionales.contains(numero))
-							&& !numerosIgnorados.contains(numero)) {
+					if ((numerosAhorcados.contains(numero) || numerosAhorcadosAdicionales.contains(numero))) {
 						foreground = Color.RED;
 						// background = COLOR_FONDO; // opcional, o dejar transparente
 					}
@@ -271,10 +270,10 @@ public class InterfazAhorcado extends JFrame {
 		areaHistorial.setLineWrap(true);
 		areaHistorial.setWrapStyleWord(true);
 		areaHistorial.setBorder(BorderFactory.createEmptyBorder(5, 10, 0, 0));
-
-		// Configurar scroll pane para la tabla
-		JScrollPane scrollPaneTabla = new JScrollPane(tablaNumeros);
-		scrollPaneTabla.setBorder(BorderFactory.createEmptyBorder());
+//
+//		// Configurar scroll pane para la tabla
+//		JScrollPane scrollPaneTabla = new JScrollPane(tablaNumeros);
+//		scrollPaneTabla.setBorder(BorderFactory.createEmptyBorder());
 
 		// Configurar scroll pane para resultados
 		JScrollPane scrollPaneResultados = new JScrollPane(areaResultados);
@@ -284,7 +283,7 @@ public class InterfazAhorcado extends JFrame {
 
 		// Configurar scroll pane para historial
 		JScrollPane scrollPaneHistorial = new JScrollPane(areaHistorial);
-		scrollPaneHistorial.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+//		scrollPaneHistorial.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
 		scrollPaneHistorial.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPaneHistorial.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -340,7 +339,7 @@ public class InterfazAhorcado extends JFrame {
 		botonVerMenosDiez.addActionListener(e -> {
 			// Combinar los números seleccionados
 			Set<Integer> seleccionados = obtenerNumerosSeleccionados();
-			Set<Integer> menosDiez = new HashSet<>();
+//			Set<Integer> menosDiez = new HashSet<>();
 
 			if (seleccionados.isEmpty()) {
 				JOptionPane.showMessageDialog(this, "No hay números seleccionados.", "Atención",
@@ -377,7 +376,6 @@ public class InterfazAhorcado extends JFrame {
 
 	}
 
-	private Set<Integer> numerosIgnorados = new HashSet<>();
 
 	private List<Integer> getNumerosSeleccionadosEnFila(int fila) {
 		List<Integer> numeros = new ArrayList<>();
@@ -691,7 +689,7 @@ public class InterfazAhorcado extends JFrame {
 	private boolean seleccionadoEnTablero(int numero) {
 		int fila = (numero - 1) / 10;
 		int columna = (numero - 1) % 10;
-		return seleccionados[fila][columna];
+		return seleccionados[columna][fila];
 	}
 
 	public List<int[]> encontrarCoordenadasEnTableroExtendido(int numero) {
@@ -760,8 +758,8 @@ public class InterfazAhorcado extends JFrame {
 	}
 
 	public void procesarCombinacionesEnLista(List<Integer> numeros, String tipo) {
-		Set<Integer> numerosAhorcadosValidos = new HashSet<>();
-		Set<Integer> numerosAhorcadosInvalidos = new HashSet<>();
+//		Set<Integer> numerosAhorcadosValidos = new HashSet<>();
+//		Set<Integer> numerosAhorcadosInvalidos = new HashSet<>();
 		if (numeros == null || tipo == null) {
 			throw new IllegalArgumentException("Los parámetros no pueden ser nulos");
 		}
@@ -818,12 +816,10 @@ public class InterfazAhorcado extends JFrame {
 					if (combinacionValida && mismaColumna && cantidad == 1) {
 						combinacionValida = false;
 						int candidato = (menor + mayor) / 2;
-						numerosIgnorados.add(candidato); // ✅ lo mandamos a la lista de ignorados
 						ahorcadoPrincipal = null; // ❌ no marcarlo como ahorcado normal
 					}
 					// 🚫 No procesar combinaciones inválidas ni ignoradas
-					if (!combinacionValida || ahorcadoPrincipal == null
-							|| numerosIgnorados.contains(ahorcadoPrincipal)) {
+					if (!combinacionValida || ahorcadoPrincipal == null) {
 						continue;
 					}
 

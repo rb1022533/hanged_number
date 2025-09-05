@@ -758,8 +758,8 @@ public class InterfazAhorcado extends JFrame {
 	}
 
 	public void procesarCombinacionesEnLista(List<Integer> numeros, String tipo) {
-//		Set<Integer> numerosAhorcadosValidos = new HashSet<>();
-//		Set<Integer> numerosAhorcadosInvalidos = new HashSet<>();
+		Set<Integer> numerosAhorcadosValidos = new HashSet<>();
+		Set<Integer> numerosAhorcadosInvalidos = new HashSet<>();
 		if (numeros == null || tipo == null) {
 			throw new IllegalArgumentException("Los parámetros no pueden ser nulos");
 		}
@@ -852,8 +852,8 @@ public class InterfazAhorcado extends JFrame {
 					}
 
 					StringBuilder resultado = new StringBuilder();
-					resultado.append("Combinación: " + num1).append(" - ").append(num2).append("; Número ahorcado: (")
-							.append(ahorcadoPrincipal).append(")");
+					resultado.append("Combinación: " + num1).append(" - ").append(num2).append("; Número ahorcado: ")
+							.append(ahorcadoPrincipal);
 
 					if (combinacionValida && ahorcadoPrincipal != null
 							&& !numerosAhorcados.contains(ahorcadoPrincipal)) {
@@ -933,12 +933,13 @@ public class InterfazAhorcado extends JFrame {
 					}
 
 					StringBuilder resultado = new StringBuilder();
-					resultado.append("Ahorcado adicional: ");
+					resultado.append("Combinación: " + num1).append(" - ").append(num2);
+					resultado.append("; Ahorcado adicional: ");
 
 					boolean tieneDatos = false;
 					if (ahorcadoFilaExtendida != null && !num1.equals(ahorcadoFilaExtendida)
 							&& !num2.equals(ahorcadoFilaExtendida)) {
-						resultado.append(" (").append(ahorcadoFilaExtendida).append(")");
+						resultado.append(" ").append(ahorcadoFilaExtendida);
 						tieneDatos = true;
 					}
 					for (Integer numero : nuevos) {
@@ -1017,8 +1018,8 @@ public class InterfazAhorcado extends JFrame {
 				}
 
 				StringBuilder resultado = new StringBuilder();
-				resultado.append("Combinación: ").append(num1).append(" - ").append(num2).append("; Número ahorcado: (")
-						.append(ahorcadoPrincipal).append(")");
+				resultado.append("Combinación: ").append(num1).append(" - ").append(num2).append("; Número ahorcado: ")
+						.append(ahorcadoPrincipal);
 
 				if (combinacionValida && ahorcadoPrincipal != null && !numerosAhorcados.contains(ahorcadoPrincipal)) {
 					numerosAhorcados.add(ahorcadoPrincipal);

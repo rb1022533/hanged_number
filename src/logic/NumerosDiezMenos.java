@@ -37,8 +37,8 @@ public class NumerosDiezMenos {
     @Override
     public String toString() {
         return "No. diez menos: " + numeroDiezMenos +
-               "      Referencia: " + numeroBase +
-               "      Combinación: " + combinacion;
+               "      Referencia: " + numeroBase;
+//               "Combinación: " + combinacion;
     }
 
     // 🔹 Aquí va el método que me preguntabas

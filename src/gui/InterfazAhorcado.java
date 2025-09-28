@@ -36,11 +36,14 @@ public class InterfazAhorcado extends JFrame {
 	private TablaEventHandler handler;
 	private Set<String> combinacionesProcesadas = new HashSet<>();
 
+	// Lista para almacenar todas las combinaciones detectadas
+	private List<String> todasLasCombinaciones = new ArrayList<>();
+
 	// Para los estilos
-	private final Color COLOR_PRIMARIO = new Color(37, 99, 235); //  Azul  
-	private final Color COLOR_ACENTO = new Color(30, 58, 138); //  Hover
+	private final Color COLOR_PRIMARIO = new Color(37, 99, 235); // Azul
+	private final Color COLOR_ACENTO = new Color(30, 58, 138); // Hover
 	private final Color COLOR_FONDO = new Color(243, 244, 246); // Fondo gris claro
-	private final Color COLOR_TEXTO = new Color(17, 24, 39);    // Texto normal
+	private final Color COLOR_TEXTO = new Color(17, 24, 39); // Texto normal
 	private final Color COLOR_TEXTAREAS = new Color(255, 255, 255); // Color blanco
 	private final Color COLOR_BORDE = new Color(200, 200, 200); // Gris claro para bordes
 
@@ -63,6 +66,10 @@ public class InterfazAhorcado extends JFrame {
 			{ 16, 26, 36, 46, 56, 66, 76, 86, 96, 6, 16, 26, 36, 46, 56, 66, 76, 86 },
 			{ 17, 27, 37, 47, 57, 67, 77, 87, 97, 7, 17, 27, 37, 47, 57, 67, 77, 87 },
 			{ 18, 28, 38, 48, 58, 68, 78, 88, 98, 8, 18, 28, 38, 48, 58, 68, 78, 88 } };
+
+	public List<String> getTodasLasCombinaciones() {
+		return todasLasCombinaciones; // suponiendo que tu lista se llama así
+	}
 
 	public InterfazAhorcado() {
 		URL iconUrl = getClass().getResource("favicon.png");
@@ -337,18 +344,16 @@ public class InterfazAhorcado extends JFrame {
 		});
 
 		botonVerMenosDiez.addActionListener(e -> {
-			// Combinar los números seleccionados
 			Set<Integer> seleccionados = obtenerNumerosSeleccionados();
-//			Set<Integer> menosDiez = new HashSet<>();
-
 			if (seleccionados.isEmpty()) {
 				JOptionPane.showMessageDialog(this, "No hay números seleccionados.", "Atención",
 						JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 
-			// Abrir la ventana MostrarMenosDiez, que ya hace la lógica de "menos diez"
-			new MostrarMenosDiez(seleccionados).setVisible(true);
+			int numeroAhorcado = 0;
+			MostrarMenosDiez ventana = new MostrarMenosDiez(obtenerNumerosSeleccionados(), this, numeroAhorcado);
+			ventana.setVisible(true);
 		});
 
 		botonReiniciar.registerKeyboardAction(e -> botonReiniciar.doClick(),
@@ -375,7 +380,6 @@ public class InterfazAhorcado extends JFrame {
 		getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, COLOR_BORDE));
 
 	}
-
 
 	private List<Integer> getNumerosSeleccionadosEnFila(int fila) {
 		List<Integer> numeros = new ArrayList<>();
@@ -758,8 +762,8 @@ public class InterfazAhorcado extends JFrame {
 	}
 
 	public void procesarCombinacionesEnLista(List<Integer> numeros, String tipo) {
-		Set<Integer> numerosAhorcadosValidos = new HashSet<>();
-		Set<Integer> numerosAhorcadosInvalidos = new HashSet<>();
+//		Set<Integer> numerosAhorcadosValidos = new HashSet<>();
+//		Set<Integer> numerosAhorcadosInvalidos = new HashSet<>();
 		if (numeros == null || tipo == null) {
 			throw new IllegalArgumentException("Los parámetros no pueden ser nulos");
 		}
@@ -872,6 +876,7 @@ public class InterfazAhorcado extends JFrame {
 					if (areaResultados != null) {
 						areaResultados.append(resultado.toString());
 						areaResultados.append("\n");
+						registrarCombinacion(resultado.toString()); // ✅ ya no dará error
 					}
 
 					if (areaHistorial != null) {
@@ -884,6 +889,7 @@ public class InterfazAhorcado extends JFrame {
 							areaHistorial.setCaretPosition(areaHistorial.getDocument().getLength());
 							areaHistorial.revalidate();
 							areaHistorial.repaint();
+							registrarCombinacion(resultado.toString()); // ✅ ya no dará error
 						});
 					}
 
@@ -933,8 +939,7 @@ public class InterfazAhorcado extends JFrame {
 					}
 
 					StringBuilder resultado = new StringBuilder();
-					resultado.append("Combinación: " + num1).append(" - ").append(num2);
-					resultado.append("; Ahorcado adicional: ");
+					resultado.append("Ahorcado adicional: ");
 
 					boolean tieneDatos = false;
 					if (ahorcadoFilaExtendida != null && !num1.equals(ahorcadoFilaExtendida)
@@ -1036,6 +1041,7 @@ public class InterfazAhorcado extends JFrame {
 				if (areaResultados != null) {
 					areaResultados.append(resultado.toString());
 					areaResultados.append("\n");
+//					 registrarCombinacion(resultado.toString()); // 👈 Guardar también aquí
 				}
 
 				combinacionesProcesadas.add(combinacionId);
@@ -1051,9 +1057,22 @@ public class InterfazAhorcado extends JFrame {
 						areaHistorial.revalidate();
 						areaHistorial.repaint();
 					});
+					registrarCombinacion(resultado.toString()); // 👈 Guardar también aquí
 				}
 			}
 		}
+	}
+
+	/**
+	 * Intercepta una combinación válida detectada y la guarda en memoria para usos
+	 * posteriores.
+	 */
+	public List<String> registrarCombinacion(String combinacion) {
+		if (combinacion != null && !combinacion.trim().isEmpty()) {
+			todasLasCombinaciones.add(combinacion.trim());
+//	        System.out.println("Combinación registrada: " + combinacion); // 👈 Debug
+		}
+		return todasLasCombinaciones;
 	}
 
 	public int contarNumerosEntreFilaExtendida(int num1, int num2) {
@@ -1300,6 +1319,8 @@ public class InterfazAhorcado extends JFrame {
 		areaHistorial.setText("");
 		tablaNumeros.clearSelection();
 		tablaNumeros.repaint();
+		
+		
 	}
 
 	class TablaEventHandler extends MouseAdapter {

@@ -25,8 +25,8 @@ public class MostrarMenosDiez extends JFrame {
             setIconImage(new ImageIcon(iconUrl).getImage());
         }
 
-        setTitle("Números 10-");
-        setSize(800, 400);
+        setTitle("Números 10 Menos");
+        setSize(700, 400);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);

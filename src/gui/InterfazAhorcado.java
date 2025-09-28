@@ -323,7 +323,7 @@ public class InterfazAhorcado extends JFrame {
 
 		});
 
-		botonVerMenosDiez = new JButton("Ver -10");
+		botonVerMenosDiez = new JButton("Ver 10 Menos");
 		botonVerMenosDiez.setFont(new Font("Arial", Font.BOLD, 14));
 		botonVerMenosDiez.setBackground(COLOR_PRIMARIO);
 		botonVerMenosDiez.setForeground(COLOR_FONDO);
@@ -342,14 +342,53 @@ public class InterfazAhorcado extends JFrame {
 			}
 
 		});
+		
 
 		botonVerMenosDiez.addActionListener(e -> {
 			Set<Integer> seleccionados = obtenerNumerosSeleccionados();
-			if (seleccionados.isEmpty()) {
-				JOptionPane.showMessageDialog(this, "No hay números seleccionados.", "Atención",
-						JOptionPane.WARNING_MESSAGE);
-				return;
-			}
+			 if (seleccionados.isEmpty()) {
+			        // Crear un botón personalizado para el JOptionPane
+			        JButton botonCerrar = new JButton("OK");
+			        botonCerrar.setFont(new Font("Arial", Font.BOLD, 14));
+			        botonCerrar.setBackground(COLOR_PRIMARIO);
+			        botonCerrar.setForeground(COLOR_FONDO);
+			        botonCerrar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+			        // Acción del botón
+			        botonCerrar.addActionListener(ev -> {
+			            Window w = SwingUtilities.getWindowAncestor(botonCerrar);
+			            if (w != null) w.dispose();
+			        });
+			        
+			     // Hover
+					botonCerrar.addMouseListener(new java.awt.event.MouseAdapter() {
+						@Override
+						public void mouseEntered(java.awt.event.MouseEvent evt) {
+							botonCerrar.setBackground(COLOR_ACENTO); // cambia al color hover
+						}
+
+						@Override
+						public void mouseExited(java.awt.event.MouseEvent evt) {
+							botonCerrar.setBackground(COLOR_PRIMARIO); // vuelve al color original
+						}
+
+					});
+
+			        // Mostrar JOptionPane con el botón personalizado
+			        Object[] options = { botonCerrar };
+			        JOptionPane.showOptionDialog(
+			            this,
+			            "No hay números seleccionados.",
+			            "Atención",
+			            JOptionPane.DEFAULT_OPTION,
+			            JOptionPane.WARNING_MESSAGE,
+			            null,
+			            options,
+			            options[0]
+			        );
+
+			        return; // Salimos del ActionListener
+			    }
 
 			int numeroAhorcado = 0;
 			MostrarMenosDiez ventana = new MostrarMenosDiez(obtenerNumerosSeleccionados(), this, numeroAhorcado);
@@ -1023,7 +1062,7 @@ public class InterfazAhorcado extends JFrame {
 				}
 
 				StringBuilder resultado = new StringBuilder();
-				resultado.append("Combinación: ").append(num1).append(" - ").append(num2).append("; Número ahorcado: ")
+				resultado.append("Combinación: ").append(num1).append(" - ").append(num2).append(";   Número ahorcado: ")
 						.append(ahorcadoPrincipal);
 
 				if (combinacionValida && ahorcadoPrincipal != null && !numerosAhorcados.contains(ahorcadoPrincipal)) {

@@ -73,7 +73,7 @@ public class InterfazAhorcado extends JFrame {
 
 	public InterfazAhorcado() {
 		URL iconUrl = getClass().getResource("favicon.png");
-		System.out.println(iconUrl != null ? "Cargado: " + iconUrl : "❌ No encontrado");
+//		System.out.println(iconUrl != null ? "Cargado: " + iconUrl : "❌ No encontrado");
 
 		if (iconUrl != null) {
 			ImageIcon icono = new ImageIcon(iconUrl);

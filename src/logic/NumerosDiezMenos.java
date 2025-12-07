@@ -20,6 +20,14 @@ public class NumerosDiezMenos {
     // 👉 referencia al objeto InterfazAhorcado
     private InterfazAhorcado interfaz;
     
+ // ✅ Constructor especial para casos 1-91, 2-92, ..., 10-100
+    public NumerosDiezMenos(int numeroDiezMenos, int numeroBase, String combinacion, InterfazAhorcado interfaz) {
+        this.numeroDiezMenos = numeroDiezMenos; // NO se calcula
+        this.numeroBase = numeroBase;           // referencia real
+        this.combinacion = combinacion;
+        this.interfaz = interfaz;
+    }
+    
     public NumerosDiezMenos(int numeroBase, String combinacion, InterfazAhorcado interfaz) {
         this.numeroBase = numeroBase;
         this.numeroDiezMenos = numeroBase - 10;
@@ -46,10 +54,14 @@ public class NumerosDiezMenos {
 
     @Override
     public String toString() {
-        return "No. diez menos: " + numeroDiezMenos +
-               "      Referencia: " + numeroBase +
-               "      "  + combinacion + 
-               "\n";
+        String resultado = "No. diez menos: " + numeroDiezMenos +
+                           "      Referencia: " + numeroBase;
+
+        if (combinacion != null && !combinacion.isEmpty()) {
+            resultado += "      " + combinacion;
+        }
+
+        return resultado + "\n";
     }
 
     // 🔹 Aquí va el método que me preguntabas
@@ -57,6 +69,26 @@ public class NumerosDiezMenos {
         Set<NumerosDiezMenos> resultado = new HashSet<>();
 
         for (Integer num : numerosSeleccionados) {
+        	
+        	// ✅ Caso especial: 1-91, 2-92, ..., 10-100
+        	int referencia = num + 90;
+
+        	if (numerosSeleccionados.contains(referencia)) {
+
+        		String combinacion = ""; // ← VACÍA
+
+        	    // num = No. diez menos | referencia = Referencia
+        	    NumerosDiezMenos ndm = new NumerosDiezMenos(
+        	            num,           // número diez menos
+        	            referencia,    // 92
+        	            combinacion,
+        	            interfaz
+        	    );
+
+        	    resultado.add(ndm);
+        	    continue; // ⛔ no entra a la lógica normal
+        	}
+        	
             if (numerosSeleccionados.contains(num - 10)) {
 
                 List<String> combinacionesCorrectas = new ArrayList<>();

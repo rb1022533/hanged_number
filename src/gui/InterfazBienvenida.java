@@ -21,7 +21,7 @@ public class InterfazBienvenida extends JFrame {
 
 	public InterfazBienvenida() {
 		java.net.URL iconUrl = getClass().getResource("favicon.png");
-		System.out.println(iconUrl != null ? "Cargado: " + iconUrl : "No encontrado");
+//		System.out.println(iconUrl != null ? "Cargado: " + iconUrl : "No encontrado");
 
 		if (iconUrl != null) {
 			ImageIcon icono = new ImageIcon(iconUrl);
@@ -39,10 +39,10 @@ public class InterfazBienvenida extends JFrame {
 				System.err.println("No se encontró la imagen de fondo");
 			} else {
 				imagenFondo = ImageIO.read(fondoStream);
-				System.out.println("Imagen de fondo cargada correctamente");
+//				System.out.println("Imagen de fondo cargada correctamente");
 			}
 		} catch (IOException e) {
-			System.err.println("Error al cargar la imagen de fondo: " + e.getMessage());
+//			System.err.println("Error al cargar la imagen de fondo: " + e.getMessage());
 			imagenFondo = null;
 		}
 

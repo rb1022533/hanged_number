@@ -9,148 +9,187 @@ import java.util.Set;
 import gui.InterfazAhorcado;
 
 /**
- * Clase de lógica para calcular los números que son diez menos entre un conjunto de números.
+ * Clase de lógica para calcular los números que son diez menos entre un
+ * conjunto de números.
  */
 public class NumerosDiezMenos {
-    private int numeroBase;          
-    private int numeroDiezMenos;     
-    private String combinacion; 
-    private int numeroAhorcado;
-    
-    // 👉 referencia al objeto InterfazAhorcado
-    private InterfazAhorcado interfaz;
-    
- // ✅ Constructor especial para casos 1-91, 2-92, ..., 10-100
-    public NumerosDiezMenos(int numeroDiezMenos, int numeroBase, String combinacion, InterfazAhorcado interfaz) {
-        this.numeroDiezMenos = numeroDiezMenos; // NO se calcula
-        this.numeroBase = numeroBase;           // referencia real
-        this.combinacion = combinacion;
-        this.interfaz = interfaz;
-    }
-    
-    public NumerosDiezMenos(int numeroBase, String combinacion, InterfazAhorcado interfaz) {
-        this.numeroBase = numeroBase;
-        this.numeroDiezMenos = numeroBase - 10;
-        this.combinacion = combinacion;
-        this.interfaz = interfaz;
-    }
-    
-    public int getNumeroAhorcado() {
-        return numeroAhorcado;
-    }
+	private int numeroBase;
+	private int numeroDiezMenos;
+	private String combinacion;
+	private int numeroAhorcado;
 
-    public int getNumeroBase() {
-        return numeroBase;
-    }
+	// 👉 referencia al objeto InterfazAhorcado
+	private InterfazAhorcado interfaz;
 
-    public int getNumeroDiezMenos() {
-        return numeroDiezMenos;
-    }
+	// ✅ Constructor especial para casos 1-91, 2-92, ..., 10-100
+	public NumerosDiezMenos(int numeroDiezMenos, int numeroBase, String combinacion, InterfazAhorcado interfaz) {
+		this.numeroDiezMenos = numeroDiezMenos; // NO se calcula
+		this.numeroBase = numeroBase; // referencia real
+		this.combinacion = combinacion;
+		this.interfaz = interfaz;
+	}
 
-    public String getCombinacion() {
-        return combinacion;
-    }
-    
+	public NumerosDiezMenos(int numeroBase, String combinacion, InterfazAhorcado interfaz) {
+		this.numeroBase = numeroBase;
+		this.numeroDiezMenos = numeroBase - 10;
+		this.combinacion = combinacion;
+		this.interfaz = interfaz;
+	}
 
-    @Override
-    public String toString() {
-        String resultado = "No. diez menos: " + numeroDiezMenos +
-                           "      Referencia: " + numeroBase;
+	public int getNumeroAhorcado() {
+		return numeroAhorcado;
+	}
 
-        if (combinacion != null && !combinacion.isEmpty()) {
-            resultado += "      " + combinacion;
-        }
+	public int getNumeroBase() {
+		return numeroBase;
+	}
 
-        return resultado + "\n";
-    }
+	public int getNumeroDiezMenos() {
+		return numeroDiezMenos;
+	}
 
-    // 🔹 Aquí va el método que me preguntabas
-    public static Set<NumerosDiezMenos> obtenerMenosDiez(Set<Integer> numerosSeleccionados, InterfazAhorcado interfaz, int numeroAhorcado) {
-        Set<NumerosDiezMenos> resultado = new HashSet<>();
+	public String getCombinacion() {
+		return combinacion;
+	}
 
-        for (Integer num : numerosSeleccionados) {
-        	
-        	// ✅ Caso especial: 1-91, 2-92, ..., 10-100
-        	int referencia = num + 90;
+	@Override
+	public String toString() {
+		String resultado = "No. diez menos: " + numeroDiezMenos + "      Referencia: " + numeroBase;
 
-        	if (numerosSeleccionados.contains(referencia)) {
+		if (combinacion != null && !combinacion.isEmpty()) {
+			resultado += "      " + combinacion;
+		}
 
-        		String combinacion = ""; // ← VACÍA
+		return resultado + "\n";
+	}
 
-        	    // num = No. diez menos | referencia = Referencia
-        	    NumerosDiezMenos ndm = new NumerosDiezMenos(
-        	            num,           // número diez menos
-        	            referencia,    // 92
-        	            combinacion,
-        	            interfaz
-        	    );
+	// 🔹 Aquí va el método que me preguntabas
+	public static Set<NumerosDiezMenos> obtenerMenosDiez(Set<Integer> numerosSeleccionados, InterfazAhorcado interfaz,
+			int numeroAhorcado) {
 
-        	    resultado.add(ndm);
-        	    continue; // ⛔ no entra a la lógica normal
-        	}
-        	
-            if (numerosSeleccionados.contains(num - 10)) {
+		Set<NumerosDiezMenos> resultado = new HashSet<>();
 
-                List<String> combinacionesCorrectas = new ArrayList<>();
-                List<Integer> numerosAhorcado = new ArrayList<>();
+		for (Integer num : numerosSeleccionados) {
 
-                for (String c : interfaz.getTodasLasCombinaciones()) {
-                    if (c.contains(String.valueOf(num))) {
-                        combinacionesCorrectas.add(c);
+			// En tu diseño: "num" aquí es quien será la referencia/base cuando haya num-10
+			// seleccionado
+			// y para el caso especial 1..10 también num actúa como referencia.
+			// Por tanto usamos "referencia = num" en ambos casos según corresponda a la
+			// creación del ND.
+			// CASO ESPECIAL: 1..10 con su pareja en +90
+			if (num >= 1 && num <= 10 && numerosSeleccionados.contains(num + 90)) {
+				int referencia = num; // p.ej. 6 en tu ejemplo no es 60 (referencia = 6)
+				int diezMenos = num + 90; // p.ej. 96
 
-                        String[] partes = c.split(" - ");
-                        if (partes.length == 2) {
-                            try {
-                                int n1 = Integer.parseInt(partes[0].trim());
-                                int n2 = Integer.parseInt(partes[1].trim());
-                                int na = (n1 == num) ? n2 - 10 : n1 - 10;
-                                numerosAhorcado.add(na);
-                            } catch (NumberFormatException e) {
-                                // No agregamos nada si no se puede calcular
-                            }
-                        }
-                    }
-                }
+				String combinacionConcatenada = buscarYConstruirCombinacionesParaReferencia(referencia, interfaz);
 
-                // Concatenar todas las combinaciones con su número ahorcado
-                StringBuilder combinacionConcatenada = new StringBuilder();
-                for (int i = 0; i < combinacionesCorrectas.size(); i++) {
-                    if (i > 0) combinacionConcatenada.append("\n                                                                       ");
-                    combinacionConcatenada.append(combinacionesCorrectas.get(i));
-                    if (i < numerosAhorcado.size()) { // Solo si existe número ahorcado calculado
-                        combinacionConcatenada.append("; Número ahorcado: ").append(numerosAhorcado.get(i));
-                    }
-                }
+				NumerosDiezMenos ndm = new NumerosDiezMenos(diezMenos, referencia, combinacionConcatenada, interfaz);
+				resultado.add(ndm);
+				continue;
+			}
 
-                // Si no hay combinaciones, dejamos el string vacío
-                NumerosDiezMenos ndm = new NumerosDiezMenos(num, combinacionConcatenada.toString(), interfaz);
-                resultado.add(ndm);
-            }
-        }
+			// CASO NORMAL: existe num - 10 (ej. si num = 60 y 50 está seleccionado ->
+			// referencia = 60)
+			if (numerosSeleccionados.contains(num - 10)) {
+				int referencia = num; // referencia real (ej. 60)
+				// numeroDiezMenos será num - 10 (cuando se construya el ND con constructor
+				// normal)
+				String combinacionConcatenada = buscarYConstruirCombinacionesParaReferencia(referencia, interfaz);
 
-        return resultado;
-    }
-    
-    // 👉 Método que llama registrarCombinacion en InterfazAhorcado
-    public void guardarCombinacion() {
-        if (interfaz != null) {
-            interfaz.registrarCombinacion(combinacion);
-        }
-    }
-    
-    
-    //Evita que salga duplicado el resultado.
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NumerosDiezMenos)) return false;
-        NumerosDiezMenos otro = (NumerosDiezMenos) o;
-        return numeroBase == otro.numeroBase &&
-               numeroDiezMenos == otro.numeroDiezMenos;
-    }
+				NumerosDiezMenos ndm = new NumerosDiezMenos(num, combinacionConcatenada, interfaz);
+				resultado.add(ndm);
+			}
+		}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(numeroBase, numeroDiezMenos);
-    }
+		return resultado;
+	}
+
+	/**
+	 * Método auxiliar robusto para buscar en todasLasCombinaciones las líneas que
+	 * correspondan exactamente a la 'referencia' (comparación por enteros) y
+	 * devolver el String concatenado listo.
+	 */
+	private static String buscarYConstruirCombinacionesParaReferencia(int referencia, InterfazAhorcado interfaz) {
+		List<String> combinacionesCorrectas = new ArrayList<>();
+		List<Integer> numerosAhorcado = new ArrayList<>();
+
+		for (String c : interfaz.getTodasLasCombinaciones()) {
+			if (c == null)
+				continue;
+
+			// separar por ';' y tomar la parte combinacion (si existiera sufijo)
+			String[] porPuntoYComa = c.split(";");
+			String parteCombo = porPuntoYComa[0].trim();
+
+			// quitar prefijos "Combinación:" si existen
+			String lower = parteCombo.toLowerCase();
+			if (lower.startsWith("combinación:")) {
+				parteCombo = parteCombo.substring("combinación:".length()).trim();
+			} else if (lower.startsWith("combinacion:")) {
+				parteCombo = parteCombo.substring("combinacion:".length()).trim();
+			}
+
+			// dividir "N - M"
+			String[] partes = parteCombo.split(" - ");
+			if (partes.length != 2)
+				continue;
+
+			try {
+				int n1 = Integer.parseInt(partes[0].trim());
+				int n2 = Integer.parseInt(partes[1].trim());
+
+				// comparar por enteros EXACTOS con la referencia
+				if (n1 == referencia || n2 == referencia) {
+					// reconstrúyo la representación limpia (NO reutilizo 'c' con sufijos antiguos)
+					String comboLimpia = "Combinación: " + n1 + " - " + n2;
+					combinacionesCorrectas.add(comboLimpia);
+
+					 // ✅ calcular el número ahorcado como el punto medio entre n1 y n2
+	                int ahorcado = (n1 + n2) / 2;
+	                numerosAhorcado.add(ahorcado);
+				}
+
+			} catch (NumberFormatException ex) {
+				// ignorar entradas mal formadas
+			}
+		}
+
+		// construir string final desde las listas limpias
+		if (combinacionesCorrectas.isEmpty())
+			return "";
+
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < combinacionesCorrectas.size(); i++) {
+			if (i > 0)
+				sb.append("\n                                                                       ");
+			sb.append(combinacionesCorrectas.get(i));
+			if (i < numerosAhorcado.size()) {
+				sb.append("; Número ahorcado: ").append(numerosAhorcado.get(i));
+			}
+		}
+		return sb.toString();
+	}
+
+	// 👉 Método que llama registrarCombinacion en InterfazAhorcado
+	public void guardarCombinacion() {
+		if (interfaz != null) {
+			interfaz.registrarCombinacion(combinacion);
+		}
+	}
+
+	// Evita que salga duplicado el resultado.
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof NumerosDiezMenos))
+			return false;
+		NumerosDiezMenos otro = (NumerosDiezMenos) o;
+		return numeroBase == otro.numeroBase && numeroDiezMenos == otro.numeroDiezMenos;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(numeroBase, numeroDiezMenos);
+	}
 }

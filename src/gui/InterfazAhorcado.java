@@ -68,7 +68,11 @@ public class InterfazAhorcado extends JFrame {
 			{ 18, 28, 38, 48, 58, 68, 78, 88, 98, 8, 18, 28, 38, 48, 58, 68, 78, 88 } };
 
 	public List<String> getTodasLasCombinaciones() {
-		return todasLasCombinaciones; // suponiendo que tu lista se llama así
+	    return new ArrayList<>(todasLasCombinaciones);
+	}
+	
+	public void limpiarCombinaciones() {
+	    todasLasCombinaciones.clear();
 	}
 
 	public InterfazAhorcado() {
@@ -1345,21 +1349,26 @@ public class InterfazAhorcado extends JFrame {
 	}
 
 	public void reiniciarJuego() {
-		for (int i = 0; i < seleccionados.length; i++) {
-			for (int j = 0; j < seleccionados[i].length; j++) {
-				seleccionados[i][j] = false;
-			}
-		}
+	    // Limpiar matriz de selección (visual y lógica)
+	    for (int i = 0; i < seleccionados.length; i++) {
+	        for (int j = 0; j < seleccionados[i].length; j++) {
+	            seleccionados[i][j] = false;
+	        }
+	    }
 
-		numerosAhorcadosAdicionales.clear();
-		combinacionesProcesadas.clear();
-		numerosAhorcados.clear();
-		areaResultados.setText("");
-		areaHistorial.setText("");
-		tablaNumeros.clearSelection();
-		tablaNumeros.repaint();
-		
-		
+	    // Limpiar sets y listas relacionadas con el estado del juego
+	    numerosAhorcadosAdicionales.clear();
+	    combinacionesProcesadas.clear();
+	    numerosAhorcados.clear();
+
+	    // Limpiar la lista que guarda todas las combinaciones detectadas
+	    limpiarCombinaciones(); // <-- llamada clave que faltaba
+
+	    // Limpiar UI
+	    if (areaResultados != null) areaResultados.setText("");
+	    if (areaHistorial != null) areaHistorial.setText("");
+	    tablaNumeros.clearSelection();
+	    tablaNumeros.repaint();
 	}
 
 	class TablaEventHandler extends MouseAdapter {

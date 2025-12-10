@@ -13,10 +13,12 @@ import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,6 +40,21 @@ public class InterfazAhorcado extends JFrame {
 
 	// Lista para almacenar todas las combinaciones detectadas
 	private List<String> todasLasCombinaciones = new ArrayList<>();
+	
+	// =====================
+	// MAPA combinacion -> ahorcado
+	// =====================
+	private final Map<String, Integer> combinacionYAhorcado = new HashMap<>();
+
+	private String normalizar(int a, int b) {
+	    int menor = Math.min(a, b);
+	    int mayor = Math.max(a, b);
+	    return menor + " - " + mayor;
+	}
+
+	public Integer getAhorcadoDeCombinacion(int a, int b) {
+	    return combinacionYAhorcado.get(normalizar(a, b));
+	}
 
 	// Para los estilos
 	private final Color COLOR_PRIMARIO = new Color(37, 99, 235); // Azul
@@ -71,10 +88,12 @@ public class InterfazAhorcado extends JFrame {
 	    return new ArrayList<>(todasLasCombinaciones);
 	}
 	
+	
 	public void limpiarCombinaciones() {
 	    todasLasCombinaciones.clear();
+	    combinacionYAhorcado.clear(); // 👈 ESTO ES CLAVE
 	}
-
+	
 	public InterfazAhorcado() {
 		URL iconUrl = getClass().getResource("favicon.png");
 //		System.out.println(iconUrl != null ? "Cargado: " + iconUrl : "❌ No encontrado");
@@ -1111,11 +1130,83 @@ public class InterfazAhorcado extends JFrame {
 	 * posteriores.
 	 */
 	public List<String> registrarCombinacion(String combinacion) {
-		if (combinacion != null && !combinacion.trim().isEmpty()) {
-			todasLasCombinaciones.add(combinacion.trim());
-//	        System.out.println("Combinación registrada: " + combinacion); // 👈 Debug
-		}
-		return todasLasCombinaciones;
+	    if (combinacion == null || combinacion.trim().isEmpty()) {
+	        return todasLasCombinaciones;
+	    }
+
+	    String linea = combinacion.trim();
+	    todasLasCombinaciones.add(linea);
+
+	    // Intentamos parsear formato: "Combinación: N1 - N2; Número ahorcado: X"
+	    try {
+	        // separar la parte de combinación y la parte de ahorcado si existe
+	        String[] partes = linea.split(";");
+	        String parteCombo = partes[0].trim();
+
+	        // normalizar prefijos
+	        String lower = parteCombo.toLowerCase();
+	        if (lower.startsWith("combinación:")) {
+	            parteCombo = parteCombo.substring("combinación:".length()).trim();
+	        } else if (lower.startsWith("combinacion:")) {
+	            parteCombo = parteCombo.substring("combinacion:".length()).trim();
+	        }
+
+	        // ahora parteCombo debería ser "N1 - N2"
+	        String[] nums = parteCombo.split(" - ");
+	        if (nums.length == 2) {
+	            int n1 = Integer.parseInt(nums[0].trim());
+	            int n2 = Integer.parseInt(nums[1].trim());
+	            String key = normalizar(n1, n2);
+
+	            // buscar ahorcado si viene en la misma línea
+	            Integer ahorcado = null;
+	            if (partes.length > 1) {
+	                // buscar en el resto de la línea el número tras "Número ahorcado:" si existe
+	                for (int i = 1; i < partes.length; i++) {
+	                    String p = partes[i].trim().toLowerCase();
+	                    if (p.contains("número ahorcado") || p.contains("numero ahorcado")) {
+	                        String[] sec = partes[i].split(":");
+	                        if (sec.length >= 2) {
+	                            try {
+	                                ahorcado = Integer.parseInt(sec[1].trim().split("\\s+")[0]);
+	                            } catch (NumberFormatException e) {
+	                                ahorcado = null;
+	                            }
+	                        }
+	                        break;
+	                    }
+	                }
+	            }
+
+	            // Si no vino el ahorcado en la cadena, intenta buscarlo en la propia representación
+	            // (por si en algún punto guardas "Combinación: 11 - 51; Número ahorcado: 31" o ya la construyes)
+	            if (ahorcado == null) {
+	                // intentar buscar pattern "Número ahorcado: X" en la línea completa
+	                int idx = linea.toLowerCase().indexOf("número ahorcado");
+	                if (idx == -1) idx = linea.toLowerCase().indexOf("numero ahorcado");
+	                if (idx != -1) {
+	                    String substr = linea.substring(idx);
+	                    String[] sec = substr.split(":");
+	                    if (sec.length >= 2) {
+	                        try {
+	                            ahorcado = Integer.parseInt(sec[1].trim().split("\\s+")[0]);
+	                        } catch (NumberFormatException ex) {
+	                            ahorcado = null;
+	                        }
+	                    }
+	                }
+	            }
+
+	            // Si calculaste / obtuviste el ahorcado, guarda la relación
+	            if (ahorcado != null) {
+	                combinacionYAhorcado.put(key, ahorcado);
+	            }
+	        }
+	    } catch (Exception ex) {
+	        // No queremos romper la lógica por un parseo; dejamos la lista como estaba.
+	    }
+
+	    return new ArrayList<>(todasLasCombinaciones);
 	}
 
 	public int contarNumerosEntreFilaExtendida(int num1, int num2) {

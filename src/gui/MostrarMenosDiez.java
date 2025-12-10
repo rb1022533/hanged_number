@@ -25,13 +25,14 @@ public class MostrarMenosDiez extends JFrame {
             setIconImage(new ImageIcon(iconUrl).getImage());
         }
 
-        setTitle("Números 10 Menos");
+        setTitle("Hanged Number");
         setSize(700, 400);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
-        setResizable(false);
+        setResizable(true);
         getContentPane().setBackground(COLOR_FONDO);
         setLayout(new BorderLayout());
+        
 
         // Calcula los números -10 con combinación y número ahorcado
         Set<NumerosDiezMenos> menosDiez = NumerosDiezMenos.obtenerMenosDiez(numerosSeleccionados, interfaz, numeroAhorcado);
@@ -68,9 +69,17 @@ public class MostrarMenosDiez extends JFrame {
                     .forEach(num -> sb.append(num.toString()).append("\n"));
             area.setText(sb.toString());
         }
+        
+        JLabel lblSubtitleTabla = new JLabel("NÚMEROS 10 MENOS");
+		lblSubtitleTabla.setHorizontalAlignment(SwingConstants.LEFT);
+		lblSubtitleTabla.setFont(new Font("Arial", Font.BOLD, 18));
+		lblSubtitleTabla.setForeground(COLOR_TEXTO);
+		lblSubtitleTabla.setBounds(10, 20, 300, 20);
+		add(lblSubtitleTabla);
 
-        add(scrollPaneArea, BorderLayout.CENTER);
-
+        add(scrollPaneArea, BorderLayout.CENTER);//CENTER (así estaba anteriormente)
+        
+        
         // Botón Cerrar
         JButton cerrar = new JButton("Cerrar");
         cerrar.setFont(new Font("Arial", Font.BOLD, 14));
@@ -84,9 +93,10 @@ public class MostrarMenosDiez extends JFrame {
             public void mouseExited(java.awt.event.MouseEvent evt) { cerrar.setBackground(COLOR_PRIMARIO); }
         });
 
-        JPanel panelBoton = new JPanel();
+        JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panelBoton.setBackground(COLOR_FONDO);
         panelBoton.add(cerrar);
-        add(panelBoton, BorderLayout.SOUTH);
+        add(panelBoton, BorderLayout.NORTH);//SOUTH (así estaba anteriormente)
+        
     }
 }

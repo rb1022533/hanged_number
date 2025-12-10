@@ -2,7 +2,9 @@ package logic;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -110,18 +112,16 @@ public class NumerosDiezMenos {
 	 * devolver el String concatenado listo.
 	 */
 	private static String buscarYConstruirCombinacionesParaReferencia(int referencia, InterfazAhorcado interfaz) {
-		List<String> combinacionesCorrectas = new ArrayList<>();
-		List<Integer> numerosAhorcado = new ArrayList<>();
+
+		Map<String, Integer> combinaciones = new LinkedHashMap<>();
 
 		for (String c : interfaz.getTodasLasCombinaciones()) {
 			if (c == null)
 				continue;
 
-			// separar por ';' y tomar la parte combinacion (si existiera sufijo)
 			String[] porPuntoYComa = c.split(";");
 			String parteCombo = porPuntoYComa[0].trim();
 
-			// quitar prefijos "Combinación:" si existen
 			String lower = parteCombo.toLowerCase();
 			if (lower.startsWith("combinación:")) {
 				parteCombo = parteCombo.substring("combinación:".length()).trim();
@@ -129,7 +129,6 @@ public class NumerosDiezMenos {
 				parteCombo = parteCombo.substring("combinacion:".length()).trim();
 			}
 
-			// dividir "N - M"
 			String[] partes = parteCombo.split(" - ");
 			if (partes.length != 2)
 				continue;
@@ -138,35 +137,34 @@ public class NumerosDiezMenos {
 				int n1 = Integer.parseInt(partes[0].trim());
 				int n2 = Integer.parseInt(partes[1].trim());
 
-				// comparar por enteros EXACTOS con la referencia
 				if (n1 == referencia || n2 == referencia) {
-					// reconstrúyo la representación limpia (NO reutilizo 'c' con sufijos antiguos)
 					String comboLimpia = "Combinación: " + n1 + " - " + n2;
-					combinacionesCorrectas.add(comboLimpia);
+					Integer ahorcadoReal = interfaz.getAhorcadoDeCombinacion(n1, n2);
 
-					 // ✅ calcular el número ahorcado como el punto medio entre n1 y n2
-	                int ahorcado = (n1 + n2) / 2;
-	                numerosAhorcado.add(ahorcado);
+// ✅ la relación queda intacta
+					combinaciones.put(comboLimpia, ahorcadoReal);
 				}
 
-			} catch (NumberFormatException ex) {
-				// ignorar entradas mal formadas
+			} catch (NumberFormatException e) {
+// ignorar
 			}
 		}
 
-		// construir string final desde las listas limpias
-		if (combinacionesCorrectas.isEmpty())
+		if (combinaciones.isEmpty())
 			return "";
 
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < combinacionesCorrectas.size(); i++) {
+		int i = 0;
+
+		for (Map.Entry<String, Integer> entry : combinaciones.entrySet()) {
 			if (i > 0)
 				sb.append("\n                                                                       ");
-			sb.append(combinacionesCorrectas.get(i));
-			if (i < numerosAhorcado.size()) {
-				sb.append("; Número ahorcado: ").append(numerosAhorcado.get(i));
-			}
+
+			sb.append(entry.getKey()).append("; Número ahorcado: ").append(entry.getValue());
+
+			i++;
 		}
+
 		return sb.toString();
 	}
 

@@ -916,6 +916,12 @@ public class InterfazAhorcado extends JFrame {
 								"- El número " + ahorcadoPrincipal + " ya está seleccionado\n");
 						continue;
 					}
+					
+					// ❗ Evitar combinaciones duplicadas o invertidas 
+					String key = normalizar(num1, num2);
+					if (combinacionYAhorcado.containsKey(key)) {
+					    continue;  // Ya registrada → saltar
+					}
 
 					StringBuilder resultado = new StringBuilder();
 					resultado.append("Combinación: " + num1).append(" - ").append(num2).append("; Número ahorcado: ")
@@ -999,7 +1005,7 @@ public class InterfazAhorcado extends JFrame {
 							numerosAhorcados.add(numero);
 						}
 					}
-
+					
 					StringBuilder resultado = new StringBuilder();
 					resultado.append("Ahorcado adicional: ");
 
@@ -1082,6 +1088,12 @@ public class InterfazAhorcado extends JFrame {
 					mostrarCombinacionInvalida(num1, num2,
 							"- El número " + ahorcadoPrincipal + " ya está seleccionado\n");
 					continue;
+				}
+				
+				// ❗ Evitar combinaciones duplicadas o invertidas
+				String key = normalizar(num1, num2);
+				if (combinacionYAhorcado.containsKey(key)) {
+				    continue;  // Ya registrada → saltar
 				}
 
 				StringBuilder resultado = new StringBuilder();

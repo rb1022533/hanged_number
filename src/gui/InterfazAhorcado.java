@@ -3,6 +3,8 @@ package gui;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import java.io.File;
+import java.io.IOException;
 
 import logic.NumerosDiezMenos;
 
@@ -23,6 +25,11 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.pdfbox.pdmodel.*;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+
 public class InterfazAhorcado extends JFrame {
 	private JTable tablaNumeros;
 	private int hoveredRow = -1;
@@ -33,6 +40,7 @@ public class InterfazAhorcado extends JFrame {
 	private JTextArea areaHistorial;
 	private JButton botonReiniciar;
 	private JButton botonVerMenosDiez;
+	private JButton btnExportarPDF;
 	private Set<Integer> numerosAhorcados = new HashSet<>();
 	private Set<Integer> numerosAhorcadosAdicionales = new HashSet<>();
 	private TablaEventHandler handler;
@@ -40,20 +48,74 @@ public class InterfazAhorcado extends JFrame {
 
 	// Lista para almacenar todas las combinaciones detectadas
 	private List<String> todasLasCombinaciones = new ArrayList<>();
-	
+
 	// =====================
 	// MAPA combinacion -> ahorcado
 	// =====================
 	private final Map<String, Integer> combinacionYAhorcado = new HashMap<>();
 
 	private String normalizar(int a, int b) {
-	    int menor = Math.min(a, b);
-	    int mayor = Math.max(a, b);
-	    return menor + " - " + mayor;
+		int menor = Math.min(a, b);
+		int mayor = Math.max(a, b);
+		return menor + " - " + mayor;
+	}
+
+	private void exportarResultadosPDF() {
+
+		 // 🔽 Esto reemplaza al JFileChooser 🔽
+	    FileDialog fd = new FileDialog(this, "Guardar resultados en PDF", FileDialog.SAVE);
+	    fd.setFile("Resultados_Ahorcado.pdf");
+	    fd.setVisible(true);
+
+	    String directory = fd.getDirectory();
+	    String filename = fd.getFile();
+
+	    if (directory == null || filename == null) return; // Si el usuario canceló
+
+	    File archivo = new File(directory, filename);
+
+	    if (!archivo.getName().toLowerCase().endsWith(".pdf")) {
+	        archivo = new File(archivo.getAbsolutePath() + ".pdf");
+	    }
+
+	    // 🔽 Aquí sigue el resto de tu código de PDFBox 🔽
+	    try (PDDocument document = new PDDocument()) {
+
+	        PDPage page = new PDPage(PDRectangle.LETTER);
+	        document.addPage(page);
+
+	        PDPageContentStream content = new PDPageContentStream(document, page);
+
+	        content.beginText();
+	        content.setFont(PDType1Font.HELVETICA, 11);
+	        content.setLeading(14.5f);
+	        content.newLineAtOffset(50, 700);
+
+	        for (String linea : obtenerResultadosParaExportar()) {
+	            content.showText(linea);
+	            content.newLine();
+	        }
+
+	        content.endText();
+	        content.close();
+
+	        document.save(archivo);
+
+	        JOptionPane.showMessageDialog(this, "PDF exportado correctamente", "Éxito",
+	                JOptionPane.INFORMATION_MESSAGE);
+
+	    } catch (IOException ex) {
+	        JOptionPane.showMessageDialog(this, "Error al exportar el PDF:\n" + ex.getMessage(), "Error",
+	                JOptionPane.ERROR_MESSAGE);
+	    }
+	}
+
+	private String[] obtenerResultadosParaExportar() {
+		return areaHistorial.getText().split("\n");
 	}
 
 	public Integer getAhorcadoDeCombinacion(int a, int b) {
-	    return combinacionYAhorcado.get(normalizar(a, b));
+		return combinacionYAhorcado.get(normalizar(a, b));
 	}
 
 	// Para los estilos
@@ -85,15 +147,14 @@ public class InterfazAhorcado extends JFrame {
 			{ 18, 28, 38, 48, 58, 68, 78, 88, 98, 8, 18, 28, 38, 48, 58, 68, 78, 88 } };
 
 	public List<String> getTodasLasCombinaciones() {
-	    return new ArrayList<>(todasLasCombinaciones);
+		return new ArrayList<>(todasLasCombinaciones);
 	}
-	
-	
+
 	public void limpiarCombinaciones() {
-	    todasLasCombinaciones.clear();
-	    combinacionYAhorcado.clear(); // 👈 ESTO ES CLAVE
+		todasLasCombinaciones.clear();
+		combinacionYAhorcado.clear(); // 👈 ESTO ES CLAVE
 	}
-	
+
 	public InterfazAhorcado() {
 		URL iconUrl = getClass().getResource("favicon.png");
 //		System.out.println(iconUrl != null ? "Cargado: " + iconUrl : "❌ No encontrado");
@@ -365,53 +426,72 @@ public class InterfazAhorcado extends JFrame {
 			}
 
 		});
+
+		JButton btnExportarPDF = new JButton("Exportar");
+		btnExportarPDF.setFont(new Font("Arial", Font.BOLD, 14));
+		btnExportarPDF.setBackground(COLOR_PRIMARIO);
+		btnExportarPDF.setForeground(COLOR_FONDO);
+		btnExportarPDF.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+		// Hover
+		btnExportarPDF.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				btnExportarPDF.setBackground(COLOR_ACENTO); // cambia al color hover
+			}
+
+			@Override
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				btnExportarPDF.setBackground(COLOR_PRIMARIO); // vuelve al color original
+			}
+
+		});
 		
+		btnExportarPDF.addActionListener(new ActionListener() {
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+		        exportarResultadosPDF();
+		    }
+		});
 
 		botonVerMenosDiez.addActionListener(e -> {
 			Set<Integer> seleccionados = obtenerNumerosSeleccionados();
-			 if (seleccionados.isEmpty()) {
-			        // Crear un botón personalizado para el JOptionPane
-			        JButton botonCerrar = new JButton("OK");
-			        botonCerrar.setFont(new Font("Arial", Font.BOLD, 14));
-			        botonCerrar.setBackground(COLOR_PRIMARIO);
-			        botonCerrar.setForeground(COLOR_FONDO);
-			        botonCerrar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+			if (seleccionados.isEmpty()) {
+				// Crear un botón personalizado para el JOptionPane
+				JButton botonCerrar = new JButton("OK");
+				botonCerrar.setFont(new Font("Arial", Font.BOLD, 14));
+				botonCerrar.setBackground(COLOR_PRIMARIO);
+				botonCerrar.setForeground(COLOR_FONDO);
+				botonCerrar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-			        // Acción del botón
-			        botonCerrar.addActionListener(ev -> {
-			            Window w = SwingUtilities.getWindowAncestor(botonCerrar);
-			            if (w != null) w.dispose();
-			        });
-			        
-			     // Hover
-					botonCerrar.addMouseListener(new java.awt.event.MouseAdapter() {
-						@Override
-						public void mouseEntered(java.awt.event.MouseEvent evt) {
-							botonCerrar.setBackground(COLOR_ACENTO); // cambia al color hover
-						}
+				// Acción del botón
+				botonCerrar.addActionListener(ev -> {
+					Window w = SwingUtilities.getWindowAncestor(botonCerrar);
+					if (w != null)
+						w.dispose();
+				});
 
-						@Override
-						public void mouseExited(java.awt.event.MouseEvent evt) {
-							botonCerrar.setBackground(COLOR_PRIMARIO); // vuelve al color original
-						}
+				// Hover
+				botonCerrar.addMouseListener(new java.awt.event.MouseAdapter() {
+					@Override
+					public void mouseEntered(java.awt.event.MouseEvent evt) {
+						botonCerrar.setBackground(COLOR_ACENTO); // cambia al color hover
+					}
 
-					});
+					@Override
+					public void mouseExited(java.awt.event.MouseEvent evt) {
+						botonCerrar.setBackground(COLOR_PRIMARIO); // vuelve al color original
+					}
 
-			        // Mostrar JOptionPane con el botón personalizado
-			        Object[] options = { botonCerrar };
-			        JOptionPane.showOptionDialog(
-			            this,
-			            "No hay números seleccionados.",
-			            "Atención",
-			            JOptionPane.DEFAULT_OPTION,
-			            JOptionPane.WARNING_MESSAGE,
-			            null,
-			            options,
-			            options[0]
-			        );
+				});
 
-			        return; // Salimos del ActionListener
-			    }
+				// Mostrar JOptionPane con el botón personalizado
+				Object[] options = { botonCerrar };
+				JOptionPane.showOptionDialog(this, "No hay números seleccionados.", "Atención",
+						JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+
+				return; // Salimos del ActionListener
+			}
 
 			int numeroAhorcado = 0;
 			MostrarMenosDiez ventana = new MostrarMenosDiez(obtenerNumerosSeleccionados(), this, numeroAhorcado);
@@ -423,6 +503,7 @@ public class InterfazAhorcado extends JFrame {
 
 		JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		panelBotones.setBackground(COLOR_FONDO);
+		panelBotones.add(btnExportarPDF);
 		panelBotones.add(botonVerMenosDiez);
 		panelBotones.add(botonReiniciar);
 
@@ -737,7 +818,7 @@ public class InterfazAhorcado extends JFrame {
 	/**
 	 * Devuelve todos los números que el usuario ha seleccionado en la tabla.
 	 */
-	private Set<Integer> obtenerNumerosSeleccionados() {
+	public Set<Integer> obtenerNumerosSeleccionados() {
 		Set<Integer> seleccionadosUsuario = new HashSet<>();
 		for (int fila = 0; fila < 10; fila++) {
 			for (int col = 0; col < 10; col++) {
@@ -906,8 +987,8 @@ public class InterfazAhorcado extends JFrame {
 					combinacionesProcesadas.add(clave);
 
 					if (!combinacionValida) {
-						mostrarCombinacionInvalida(num1, num2,
-								"- Número ahorcado es nulo, coincide con los seleccionados o se encuentra a tres pasos o más.\n");
+//						mostrarCombinacionInvalida(num1, num2,
+//								"- Número ahorcado es nulo, coincide con los seleccionados o se encuentra a tres pasos o más.\n");
 						continue;
 					}
 
@@ -916,11 +997,11 @@ public class InterfazAhorcado extends JFrame {
 								"- El número " + ahorcadoPrincipal + " ya está seleccionado\n");
 						continue;
 					}
-					
-					// ❗ Evitar combinaciones duplicadas o invertidas 
+
+					// ❗ Evitar combinaciones duplicadas o invertidas
 					String key = normalizar(num1, num2);
 					if (combinacionYAhorcado.containsKey(key)) {
-					    continue;  // Ya registrada → saltar
+						continue; // Ya registrada → saltar
 					}
 
 					StringBuilder resultado = new StringBuilder();
@@ -1005,7 +1086,7 @@ public class InterfazAhorcado extends JFrame {
 							numerosAhorcados.add(numero);
 						}
 					}
-					
+
 					StringBuilder resultado = new StringBuilder();
 					resultado.append("Ahorcado adicional: ");
 
@@ -1048,14 +1129,14 @@ public class InterfazAhorcado extends JFrame {
 
 				if ((ahorcadoPrincipal == null || num1.equals(ahorcadoPrincipal) || num2.equals(ahorcadoPrincipal))
 						&& !ahorcadoCircularValido) {
-					mostrarCombinacionInvalida(num1, num2,
-							"- Número ahorcado es nulo, coincide con los seleccionados o se encuentra a tres pasos o más.\n");
+//					mostrarCombinacionInvalida(num1, num2,
+//							"- Número ahorcado es nulo, coincide con los seleccionados o se encuentra a tres pasos o más.\n");
 					continue;
 				}
 
 				if (!combinacionValida) {
-					mostrarCombinacionInvalida(num1, num2,
-							"- Número ahorcado es nulo, coincide con los seleccionados o se encuentra a tres pasos o más.\n");
+//					mostrarCombinacionInvalida(num1, num2,
+//							"- Número ahorcado es nulo, coincide con los seleccionados o se encuentra a tres pasos o más.\n");
 
 					List<Integer> nuevos = encontrarNumerosAhorcadosAdicionales(num1, num2, numeros,
 							numerosAhorcadosAdicionales);
@@ -1089,16 +1170,16 @@ public class InterfazAhorcado extends JFrame {
 							"- El número " + ahorcadoPrincipal + " ya está seleccionado\n");
 					continue;
 				}
-				
+
 				// ❗ Evitar combinaciones duplicadas o invertidas
 				String key = normalizar(num1, num2);
 				if (combinacionYAhorcado.containsKey(key)) {
-				    continue;  // Ya registrada → saltar
+					continue; // Ya registrada → saltar
 				}
 
 				StringBuilder resultado = new StringBuilder();
-				resultado.append("Combinación: ").append(num1).append(" - ").append(num2).append(";   Número ahorcado: ")
-						.append(ahorcadoPrincipal);
+				resultado.append("Combinación: ").append(num1).append(" - ").append(num2)
+						.append(";   Número ahorcado: ").append(ahorcadoPrincipal);
 
 				if (combinacionValida && ahorcadoPrincipal != null && !numerosAhorcados.contains(ahorcadoPrincipal)) {
 					numerosAhorcados.add(ahorcadoPrincipal);
@@ -1142,83 +1223,86 @@ public class InterfazAhorcado extends JFrame {
 	 * posteriores.
 	 */
 	public List<String> registrarCombinacion(String combinacion) {
-	    if (combinacion == null || combinacion.trim().isEmpty()) {
-	        return todasLasCombinaciones;
-	    }
+		if (combinacion == null || combinacion.trim().isEmpty()) {
+			return todasLasCombinaciones;
+		}
 
-	    String linea = combinacion.trim();
-	    todasLasCombinaciones.add(linea);
+		String linea = combinacion.trim();
+		todasLasCombinaciones.add(linea);
 
-	    // Intentamos parsear formato: "Combinación: N1 - N2; Número ahorcado: X"
-	    try {
-	        // separar la parte de combinación y la parte de ahorcado si existe
-	        String[] partes = linea.split(";");
-	        String parteCombo = partes[0].trim();
+		// Intentamos parsear formato: "Combinación: N1 - N2; Número ahorcado: X"
+		try {
+			// separar la parte de combinación y la parte de ahorcado si existe
+			String[] partes = linea.split(";");
+			String parteCombo = partes[0].trim();
 
-	        // normalizar prefijos
-	        String lower = parteCombo.toLowerCase();
-	        if (lower.startsWith("combinación:")) {
-	            parteCombo = parteCombo.substring("combinación:".length()).trim();
-	        } else if (lower.startsWith("combinacion:")) {
-	            parteCombo = parteCombo.substring("combinacion:".length()).trim();
-	        }
+			// normalizar prefijos
+			String lower = parteCombo.toLowerCase();
+			if (lower.startsWith("combinación:")) {
+				parteCombo = parteCombo.substring("combinación:".length()).trim();
+			} else if (lower.startsWith("combinacion:")) {
+				parteCombo = parteCombo.substring("combinacion:".length()).trim();
+			}
 
-	        // ahora parteCombo debería ser "N1 - N2"
-	        String[] nums = parteCombo.split(" - ");
-	        if (nums.length == 2) {
-	            int n1 = Integer.parseInt(nums[0].trim());
-	            int n2 = Integer.parseInt(nums[1].trim());
-	            String key = normalizar(n1, n2);
+			// ahora parteCombo debería ser "N1 - N2"
+			String[] nums = parteCombo.split(" - ");
+			if (nums.length == 2) {
+				int n1 = Integer.parseInt(nums[0].trim());
+				int n2 = Integer.parseInt(nums[1].trim());
+				String key = normalizar(n1, n2);
 
-	            // buscar ahorcado si viene en la misma línea
-	            Integer ahorcado = null;
-	            if (partes.length > 1) {
-	                // buscar en el resto de la línea el número tras "Número ahorcado:" si existe
-	                for (int i = 1; i < partes.length; i++) {
-	                    String p = partes[i].trim().toLowerCase();
-	                    if (p.contains("número ahorcado") || p.contains("numero ahorcado")) {
-	                        String[] sec = partes[i].split(":");
-	                        if (sec.length >= 2) {
-	                            try {
-	                                ahorcado = Integer.parseInt(sec[1].trim().split("\\s+")[0]);
-	                            } catch (NumberFormatException e) {
-	                                ahorcado = null;
-	                            }
-	                        }
-	                        break;
-	                    }
-	                }
-	            }
+				// buscar ahorcado si viene en la misma línea
+				Integer ahorcado = null;
+				if (partes.length > 1) {
+					// buscar en el resto de la línea el número tras "Número ahorcado:" si existe
+					for (int i = 1; i < partes.length; i++) {
+						String p = partes[i].trim().toLowerCase();
+						if (p.contains("número ahorcado") || p.contains("numero ahorcado")) {
+							String[] sec = partes[i].split(":");
+							if (sec.length >= 2) {
+								try {
+									ahorcado = Integer.parseInt(sec[1].trim().split("\\s+")[0]);
+								} catch (NumberFormatException e) {
+									ahorcado = null;
+								}
+							}
+							break;
+						}
+					}
+				}
 
-	            // Si no vino el ahorcado en la cadena, intenta buscarlo en la propia representación
-	            // (por si en algún punto guardas "Combinación: 11 - 51; Número ahorcado: 31" o ya la construyes)
-	            if (ahorcado == null) {
-	                // intentar buscar pattern "Número ahorcado: X" en la línea completa
-	                int idx = linea.toLowerCase().indexOf("número ahorcado");
-	                if (idx == -1) idx = linea.toLowerCase().indexOf("numero ahorcado");
-	                if (idx != -1) {
-	                    String substr = linea.substring(idx);
-	                    String[] sec = substr.split(":");
-	                    if (sec.length >= 2) {
-	                        try {
-	                            ahorcado = Integer.parseInt(sec[1].trim().split("\\s+")[0]);
-	                        } catch (NumberFormatException ex) {
-	                            ahorcado = null;
-	                        }
-	                    }
-	                }
-	            }
+				// Si no vino el ahorcado en la cadena, intenta buscarlo en la propia
+				// representación
+				// (por si en algún punto guardas "Combinación: 11 - 51; Número ahorcado: 31" o
+				// ya la construyes)
+				if (ahorcado == null) {
+					// intentar buscar pattern "Número ahorcado: X" en la línea completa
+					int idx = linea.toLowerCase().indexOf("número ahorcado");
+					if (idx == -1)
+						idx = linea.toLowerCase().indexOf("numero ahorcado");
+					if (idx != -1) {
+						String substr = linea.substring(idx);
+						String[] sec = substr.split(":");
+						if (sec.length >= 2) {
+							try {
+								ahorcado = Integer.parseInt(sec[1].trim().split("\\s+")[0]);
+							} catch (NumberFormatException ex) {
+								ahorcado = null;
+							}
+						}
+					}
+				}
 
-	            // Si calculaste / obtuviste el ahorcado, guarda la relación
-	            if (ahorcado != null) {
-	                combinacionYAhorcado.put(key, ahorcado);
-	            }
-	        }
-	    } catch (Exception ex) {
-	        // No queremos romper la lógica por un parseo; dejamos la lista como estaba.
-	    }
+				// Si calculaste / obtuviste el ahorcado, guarda la relación
+				if (ahorcado != null) {
+					combinacionYAhorcado.put(key, ahorcado);
+				}
+			}
+		} catch (Exception ex) {
+			// No queremos romper la lógica por un parseo; dejamos la lista como estaba.
+		}
 
-	    return new ArrayList<>(todasLasCombinaciones);
+		return new ArrayList<>(todasLasCombinaciones);
 	}
 
 	public int contarNumerosEntreFilaExtendida(int num1, int num2) {
@@ -1326,7 +1410,7 @@ public class InterfazAhorcado extends JFrame {
 		areaResultados.append("\n");
 	}
 
-	private List<Integer> encontrarNumerosAhorcadosAdicionales(int num1, int num2, List<Integer> numerosSeleccionados,
+	public List<Integer> encontrarNumerosAhorcadosAdicionales(int num1, int num2, List<Integer> numerosSeleccionados,
 			Set<Integer> numerosAhorcadosAdicionales) {
 		List<Integer> ahorcados = new ArrayList<>();
 
@@ -1452,26 +1536,28 @@ public class InterfazAhorcado extends JFrame {
 	}
 
 	public void reiniciarJuego() {
-	    // Limpiar matriz de selección (visual y lógica)
-	    for (int i = 0; i < seleccionados.length; i++) {
-	        for (int j = 0; j < seleccionados[i].length; j++) {
-	            seleccionados[i][j] = false;
-	        }
-	    }
+		// Limpiar matriz de selección (visual y lógica)
+		for (int i = 0; i < seleccionados.length; i++) {
+			for (int j = 0; j < seleccionados[i].length; j++) {
+				seleccionados[i][j] = false;
+			}
+		}
 
-	    // Limpiar sets y listas relacionadas con el estado del juego
-	    numerosAhorcadosAdicionales.clear();
-	    combinacionesProcesadas.clear();
-	    numerosAhorcados.clear();
+		// Limpiar sets y listas relacionadas con el estado del juego
+		numerosAhorcadosAdicionales.clear();
+		combinacionesProcesadas.clear();
+		numerosAhorcados.clear();
 
-	    // Limpiar la lista que guarda todas las combinaciones detectadas
-	    limpiarCombinaciones(); // <-- llamada clave que faltaba
+		// Limpiar la lista que guarda todas las combinaciones detectadas
+		limpiarCombinaciones(); // <-- llamada clave que faltaba
 
-	    // Limpiar UI
-	    if (areaResultados != null) areaResultados.setText("");
-	    if (areaHistorial != null) areaHistorial.setText("");
-	    tablaNumeros.clearSelection();
-	    tablaNumeros.repaint();
+		// Limpiar UI
+		if (areaResultados != null)
+			areaResultados.setText("");
+		if (areaHistorial != null)
+			areaHistorial.setText("");
+		tablaNumeros.clearSelection();
+		tablaNumeros.repaint();
 	}
 
 	class TablaEventHandler extends MouseAdapter {

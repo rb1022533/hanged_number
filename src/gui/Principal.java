@@ -1,6 +1,7 @@
 package gui;
 
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import java.util.List;
 import java.util.Scanner;
@@ -8,7 +9,7 @@ import java.util.Scanner;
 public class Principal {
 
 	public static void main(String[] args) {
-
+		
 		SwingUtilities.invokeLater(() -> new InterfazBienvenida().setVisible(true));
 		InterfazAhorcado ia = new InterfazAhorcado();
 		/*

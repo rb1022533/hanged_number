@@ -39,7 +39,12 @@ public class MostrarMenosDiez extends JFrame {
     // Constructor
     public MostrarMenosDiez(Set<Integer> numerosSeleccionados, InterfazAhorcado interfaz, int numeroAhorcado) {
         
-    	// 🔹 Inicializar cursor de manito
+    	URL iconUrl = getClass().getResource("/gui/favicon.png");
+        if (iconUrl != null) {
+            setIconImage(new ImageIcon(iconUrl).getImage());
+        }
+    	
+    	// ?? Inicializar cursor de manito
     	cursorMano = new MouseAdapter() {
     	    @Override
     	    public void mouseEntered(MouseEvent e) {
@@ -52,11 +57,6 @@ public class MostrarMenosDiez extends JFrame {
     	    }
     	};
     	
-    	URL iconUrl = getClass().getResource("favicon.png");
-        if (iconUrl != null) {
-            setIconImage(new ImageIcon(iconUrl).getImage());
-        }
-        
 
         setTitle("Hanged Number");
         setSize(700, 400);
@@ -119,16 +119,29 @@ public class MostrarMenosDiez extends JFrame {
             public void mouseExited(java.awt.event.MouseEvent evt) { cerrar.setBackground(COLOR_PRIMARIO); }
         });
 
-     // 1️⃣ Cargar icono original (DECLARAR FINAL)
-        final ImageIcon originalIcon = new ImageIcon(getClass().getResource("iconoExportarPdf.png"));
+        URL iconUrl1 = getClass().getResource("/gui/iconoExportarPdf.png");
 
-        // 2️⃣ Escalar icono tamaño normal
-        final ImageIcon iconoNormal = new ImageIcon(originalIcon.getImage().getScaledInstance(54, 54, Image.SCALE_SMOOTH));
+        final ImageIcon originalIcon;
+        final ImageIcon iconoNormal;
+        final ImageIcon iconoHover;
 
-        // 3️⃣ Escalar icono tamaño “hover” (ligeramente más grande)
-        final ImageIcon iconoHover = new ImageIcon(originalIcon.getImage().getScaledInstance(58, 58, Image.SCALE_SMOOTH));
+        if (iconUrl1 == null) {
+            System.err.println("? iconoExportarPdf.png NO encontrado");
+            originalIcon = null;
+            iconoNormal = null;
+            iconoHover = null;
+        } else {
+            originalIcon = new ImageIcon(iconUrl1);
 
-        // 4️⃣ Crear botón con icono normal
+            iconoNormal = new ImageIcon(
+                originalIcon.getImage().getScaledInstance(54, 54, Image.SCALE_SMOOTH)
+            );
+
+            iconoHover = new ImageIcon(
+                originalIcon.getImage().getScaledInstance(58, 58, Image.SCALE_SMOOTH)
+            );
+        }
+        // 4?? Crear botón con icono normal
         JButton btnExportarPDF = new JButton(iconoNormal);
         btnExportarPDF.setBorderPainted(false);
         btnExportarPDF.setContentAreaFilled(false);
@@ -139,26 +152,34 @@ public class MostrarMenosDiez extends JFrame {
         btnExportarPDF.setToolTipText("Exportar resultados a PDF");
         btnExportarPDF.addMouseListener(cursorMano);
 
-        // 5️⃣ Hover: cambiar icono a más grande y volver al original
+        // 5?? Hover: cambiar icono a más grande y volver al original
         btnExportarPDF.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseEntered(MouseEvent e) {
-                btnExportarPDF.setIcon(iconoHover);
+                // ?? AQUÍ VA ESTO
+                if (iconoHover != null) {
+                    btnExportarPDF.setIcon(iconoHover);
+                }
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
-                btnExportarPDF.setIcon(iconoNormal);
+                if (iconoNormal != null) {
+                    btnExportarPDF.setIcon(iconoNormal);
+                }
             }
         });
-
-        // 6️⃣ Acción al hacer clic
+        
+       
+        // 6?? Acción al hacer clic
         btnExportarPDF.addActionListener(e -> exportarResultadosPDF(area));
         
      // PANEL SUPERIOR (TÍTULO + BOTONES)
         JPanel panelSuperior = new JPanel(new BorderLayout());
         panelSuperior.setBackground(COLOR_FONDO);
 
-        // ───────── TÍTULO (IZQUIERDA) ─────────
+        // --------- TÍTULO (IZQUIERDA) ---------
         JLabel lblSubtitleTabla = new JLabel("NÚMEROS 10 MENOS");
         lblSubtitleTabla.setFont(new Font("Arial", Font.BOLD, 18));
         lblSubtitleTabla.setForeground(COLOR_TEXTO);
@@ -166,7 +187,7 @@ public class MostrarMenosDiez extends JFrame {
 
         panelSuperior.add(lblSubtitleTabla, BorderLayout.WEST);
 
-        // ───────── PANEL BOTONES (DERECHA) ─────────
+        // --------- PANEL BOTONES (DERECHA) ---------
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         panelBotones.setBackground(COLOR_FONDO);
 
@@ -180,6 +201,43 @@ public class MostrarMenosDiez extends JFrame {
         add(panelSuperior, BorderLayout.NORTH);
 
     }
+    
+  //Método Dibujar Título
+  	private static void dibujarTitulo(PDPageContentStream contentStream, String titulo) throws IOException {
+  	    contentStream.beginText();
+  	    contentStream.setFont(PDType1Font.HELVETICA_BOLD, 16);
+  	    contentStream.newLineAtOffset(50, 740);
+  	    contentStream.showText(titulo);
+  	    contentStream.endText();
+  	}
+  	
+  	//Método para Numerar Páginas
+  	private static void numerarPagina(PDPageContentStream contentStream, int pagina, int totalPaginas) throws IOException {
+  	    contentStream.beginText();
+  	    contentStream.setFont(PDType1Font.HELVETICA, 10);
+  	    contentStream.newLineAtOffset(250, 20);
+
+  	    if (totalPaginas > 0) {
+  	        contentStream.showText("Página " + pagina + " de " + totalPaginas);
+  	    } else {
+  	        contentStream.showText("Página " + pagina);
+  	    }
+
+  	    contentStream.endText();
+  	}
+  	
+ // Limpia texto para que PDFBox no falle en exe
+ // ---------------------------------------------
+ private String limpiarPDF(String s) {
+     return s.replace("\\", "\\\\")
+             .replace("(", "\\(")
+             .replace(")", "\\)")
+             .replace("\r", "")
+             .replace("\n", "")
+             .replace("\t", " ");
+ }
+    
+    
     private void exportarResultadosPDF(JTextArea area) {
         String texto = area.getText();
         if (texto == null || texto.trim().isEmpty()) {
@@ -196,11 +254,28 @@ public class MostrarMenosDiez extends JFrame {
         if (directory == null || filename == null) return;
 
         File archivo = new File(directory, filename);
+
         if (!archivo.getName().toLowerCase().endsWith(".pdf")) {
             archivo = new File(archivo.getAbsolutePath() + ".pdf");
         }
 
+        try {
+            archivo = archivo.getCanonicalFile();
+        } catch (IOException e) {
+            AlertasUI.mostrarAlerta(this, "Ruta inválida para guardar el PDF.");
+            return;
+        }
+
+        if (!archivo.getParentFile().canWrite()) {
+            AlertasUI.mostrarAlerta(this,
+                    "No tienes permiso para guardar en esa carpeta.\n\n" +
+                            "Intenta usar Documentos o Escritorio.");
+            return;
+        }
+
         String[] lineas = area.getText().split("\n");
+        
+        int paginaActual = 1;
 
         try (PDDocument document = new PDDocument()) {
             PDPage page = new PDPage(PDRectangle.LETTER);
@@ -212,19 +287,33 @@ public class MostrarMenosDiez extends JFrame {
             float margin = 50;
             float leading = 14.5f;
             float yPosition = PDRectangle.LETTER.getHeight() - margin;
+            
+         // ?? TÍTULO Y NUMERACIÓN
+            dibujarTitulo(content, "Resultados Menos Diez");
+            numerarPagina(content, paginaActual, -1);
+
+            // Bajamos el cursor para no escribir sobre el título
+            yPosition -= 40;
 
             for (String linea : lineas) {
-                if (yPosition <= margin) {
-                    content.close();
-                    page = new PDPage(PDRectangle.LETTER);
-                    document.addPage(page);
-                    content = new PDPageContentStream(document, page);
-                    content.setFont(PDType1Font.HELVETICA, 11);
-                    yPosition = PDRectangle.LETTER.getHeight() - margin;
-                }
+            	if (yPosition <= margin) {
+            	    content.close();
+
+            	    paginaActual++;
+
+            	    page = new PDPage(PDRectangle.LETTER);
+            	    document.addPage(page);
+            	    content = new PDPageContentStream(document, page);
+            	    content.setFont(PDType1Font.HELVETICA, 11);
+
+            	    dibujarTitulo(content, "Resultados Menos Diez");
+            	    numerarPagina(content, paginaActual, -1);
+
+            	    yPosition = PDRectangle.LETTER.getHeight() - margin - 40;
+            	}
                 content.beginText();
                 content.newLineAtOffset(margin, yPosition);
-                content.showText(linea);
+                content.showText(limpiarPDF(linea));
                 content.endText();
                 yPosition -= leading;
             }

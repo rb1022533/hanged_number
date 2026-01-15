@@ -20,7 +20,7 @@ public class InterfazBienvenida extends JFrame {
 	private BufferedImage imagenFondo;
 
 	public InterfazBienvenida() {
-		java.net.URL iconUrl = getClass().getResource("favicon.png");
+		java.net.URL iconUrl = getClass().getResource("/gui/favicon.png");
 //		System.out.println(iconUrl != null ? "Cargado: " + iconUrl : "No encontrado");
 
 		if (iconUrl != null) {
@@ -34,7 +34,7 @@ public class InterfazBienvenida extends JFrame {
 		setResizable(false);
 
 		try {
-			InputStream fondoStream = getClass().getResourceAsStream("fondo.png");
+			InputStream fondoStream = getClass().getResourceAsStream("/gui/fondo.png");
 			if (fondoStream == null) {
 				System.err.println("No se encontró la imagen de fondo");
 			} else {

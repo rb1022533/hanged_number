@@ -6,11 +6,25 @@ import javax.swing.UIManager;
 import java.util.List;
 import java.util.Scanner;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Principal {
+	
+	public static void silenciarPDFBox() {		
+		silenciarPDFBox();		
+	    Logger.getLogger("org.apache.pdfbox").setLevel(Level.SEVERE);
+	}
 
 	public static void main(String[] args) {
 		
-		SwingUtilities.invokeLater(() -> new InterfazBienvenida().setVisible(true));
+		try {
+	        javax.swing.SwingUtilities.invokeAndWait(() -> {
+	            new InterfazBienvenida().setVisible(true);
+	        });
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
 		InterfazAhorcado ia = new InterfazAhorcado();
 		/*
 		 * Scanner lectura = new Scanner(System.in); int[][] pares = { { 1, 81 }, //

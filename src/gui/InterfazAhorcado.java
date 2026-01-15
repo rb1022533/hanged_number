@@ -64,97 +64,138 @@ public class InterfazAhorcado extends JFrame {
 		return menor + " - " + mayor;
 	}
 
+	// Método Dibujar Título
+	private static void dibujarTitulo(PDPageContentStream contentStream, String titulo) throws IOException {
+		contentStream.beginText();
+		contentStream.setFont(PDType1Font.HELVETICA_BOLD, 16);
+		contentStream.newLineAtOffset(50, 740);
+		contentStream.showText(titulo);
+		contentStream.endText();
+	}
+
+	// Método para Numerar Páginas
+	private static void numerarPagina(PDPageContentStream contentStream, int pagina, int totalPaginas)
+			throws IOException {
+		contentStream.beginText();
+		contentStream.setFont(PDType1Font.HELVETICA, 10);
+		contentStream.newLineAtOffset(250, 20);
+
+		if (totalPaginas > 0) {
+			contentStream.showText("Página " + pagina + " de " + totalPaginas);
+		} else {
+			contentStream.showText("Página " + pagina);
+		}
+
+		contentStream.endText();
+	}
+
 	private void exportarResultadosPDF() {
 
-		String texto = areaHistorial.getText();
+	    String texto = areaHistorial.getText();
 
-		// Validación: no hay datos reales para exportar
-		if (texto == null || texto.trim().isEmpty()) {
+	    if (texto == null || texto.trim().isEmpty()) {
+	        AlertasUI.mostrarAlerta(this, "No hay resultados para exportar.");
+	        return;
+	    }
 
-			if (texto == null || texto.trim().isEmpty()) {
-				AlertasUI.mostrarAlerta(this, "No hay resultados para exportar.");
-				return;
-			}
-		}
+	    FileDialog fd = new FileDialog(this, "Guardar resultados en PDF", FileDialog.SAVE);
+	    fd.setFile("Resultados_Ahorcado.pdf");
+	    fd.setVisible(true);
 
-		FileDialog fd = new FileDialog(this, "Guardar resultados en PDF", FileDialog.SAVE);
-		fd.setFile("Resultados_Ahorcado.pdf");
-		fd.setVisible(true);
+	    String directory = fd.getDirectory();
+	    String filename = fd.getFile();
+	    if (directory == null || filename == null) return;
 
-		String directory = fd.getDirectory();
-		String filename = fd.getFile();
-		if (directory == null || filename == null)
-			return;
+	    try {
 
-		File archivo = new File(directory, filename);
-		if (!archivo.getName().toLowerCase().endsWith(".pdf")) {
-			archivo = new File(archivo.getAbsolutePath() + ".pdf");
-		}
+	        File archivo = new File(directory, filename);
+	        if (!archivo.getName().toLowerCase().endsWith(".pdf")) {
+	            archivo = new File(archivo.getAbsolutePath() + ".pdf");
+	        }
 
-		String[] lineas = obtenerResultadosParaExportar();
-		if (lineas.length == 0 || (lineas.length == 1 && lineas[0].trim().isEmpty())) {
-			JOptionPane.showMessageDialog(this, "No hay resultados para exportar.", "Aviso",
-					JOptionPane.WARNING_MESSAGE);
-			return;
-		}
+	        archivo = archivo.getCanonicalFile();
 
-		try (PDDocument document = new PDDocument()) {
+	        if (!archivo.getParentFile().canWrite()) {
+	            AlertasUI.mostrarAlerta(this,
+	                    "No tienes permiso para guardar en esa carpeta.\n\n" +
+	                            "Intenta usar Documentos o Escritorio.");
+	            return;
+	        }
 
-			PDPage page = new PDPage(PDRectangle.LETTER);
-			document.addPage(page);
+	        String[] lineas = obtenerResultadosParaExportar();
+	        if (lineas.length == 0 || (lineas.length == 1 && lineas[0].trim().isEmpty())) {
+	            JOptionPane.showMessageDialog(this, "No hay resultados para exportar.",
+	                    "Aviso", JOptionPane.WARNING_MESSAGE);
+	            return;
+	        }
 
-			PDPageContentStream content = new PDPageContentStream(document, page);
-			content.setFont(PDType1Font.HELVETICA, 11);
+	        int paginaActual = 1;
 
-			float margin = 50;
-			float leading = 14.5f;
-			int numColumnas = 2;
+	        try (PDDocument document = new PDDocument()) {
 
-			float pageWidth = PDRectangle.LETTER.getWidth();
-			float pageHeight = PDRectangle.LETTER.getHeight();
+	            PDPage page = new PDPage(PDRectangle.LETTER);
+	            document.addPage(page);
 
-			float usableWidth = pageWidth - 2 * margin;
-			float usableHeight = pageHeight - 2 * margin;
-			float columnWidth = usableWidth / numColumnas;
+	            PDPageContentStream content = new PDPageContentStream(document, page);
+	            content.setFont(PDType1Font.HELVETICA, 11);
 
-			int currentColumn = 0;
-			float yPosition = pageHeight - margin;
+	            dibujarTitulo(content, "Resultados Ahorcados");
+	            numerarPagina(content, paginaActual, -1);
 
-			for (String linea : lineas) {
-				// Si llegamos al margen inferior, saltamos de columna
-				if (yPosition <= margin) {
-					currentColumn++;
-					yPosition = pageHeight - margin;
-					if (currentColumn >= numColumnas) {
-						// todas las columnas llenas → nueva página
-						content.close();
-						page = new PDPage(PDRectangle.LETTER);
-						document.addPage(page);
-						content = new PDPageContentStream(document, page);
-						content.setFont(PDType1Font.HELVETICA, 11);
-						currentColumn = 0;
-					}
-				}
+	            float margin = 50;
+	            float leading = 14.5f;
+	            int numColumnas = 2;
 
-				float xPosition = margin + currentColumn * columnWidth;
+	            float pageWidth = PDRectangle.LETTER.getWidth();
+	            float pageHeight = PDRectangle.LETTER.getHeight();
+	            float columnWidth = (pageWidth - 2 * margin) / numColumnas;
 
-				// 🔹 Escribimos usando coordenadas absolutas
-				content.beginText();
-				content.newLineAtOffset(xPosition, yPosition);
-				content.showText(linea);
-				content.endText();
+	            int currentColumn = 0;
+	            float yPosition = pageHeight - margin - 40;
 
-				yPosition -= leading;
-			}
+	            for (String linea : lineas) {
 
-			content.close();
-			document.save(archivo);
+	                if (yPosition <= margin) {
+	                    currentColumn++;
+	                    yPosition = pageHeight - margin;
 
-			AlertasUI.mostrarAlerta(this, "PDF Exportado correctamente");
+	                    if (currentColumn >= numColumnas) {
+	                        content.close();
+	                        paginaActual++;
 
-		} catch (IOException ex) {
-			AlertasUI.mostrarAlerta(this, "Error al exportar el PDF:\n");
-		}
+	                        page = new PDPage(PDRectangle.LETTER);
+	                        document.addPage(page);
+	                        content = new PDPageContentStream(document, page);
+	                        content.setFont(PDType1Font.HELVETICA, 11);
+
+	                        dibujarTitulo(content, "Resultados Ahorcados");
+	                        numerarPagina(content, paginaActual, -1);
+
+	                        currentColumn = 0;
+	                        yPosition = pageHeight - margin - 40;
+	                    }
+	                }
+
+	                float xPosition = margin + currentColumn * columnWidth;
+
+	                content.beginText();
+	                content.newLineAtOffset(xPosition, yPosition);
+	                content.showText(linea);
+	                content.endText();
+
+	                yPosition -= leading;
+	            }
+
+	            content.close();
+	            document.save(archivo);
+	        }
+
+	        AlertasUI.mostrarAlerta(this, "PDF Exportado correctamente");
+
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	        AlertasUI.mostrarAlerta(this, "Error al exportar el PDF:\n" + ex.getMessage());
+	    }
 	}
 
 	private String[] obtenerResultadosParaExportar() {
@@ -205,6 +246,17 @@ public class InterfazAhorcado extends JFrame {
 	}
 
 	public InterfazAhorcado() {
+
+		URL iconUrl = getClass().getResource("/gui/favicon.png");
+//		System.out.println(iconUrl != null ? "Cargado: " + iconUrl : "❌ No encontrado");
+
+		if (iconUrl != null) {
+			ImageIcon icono = new ImageIcon(iconUrl);
+			setIconImage(icono.getImage());
+		}
+//		setIconImage(icono.getImage());\
+		// Inicializar logicaJuego primero
+
 		cursorMano = new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent e) {
@@ -216,16 +268,6 @@ public class InterfazAhorcado extends JFrame {
 				((JComponent) e.getSource()).setCursor(Cursor.getDefaultCursor());
 			}
 		};
-
-		URL iconUrl = getClass().getResource("favicon.png");
-//		System.out.println(iconUrl != null ? "Cargado: " + iconUrl : "❌ No encontrado");
-
-		if (iconUrl != null) {
-			ImageIcon icono = new ImageIcon(iconUrl);
-			setIconImage(icono.getImage());
-		}
-//		setIconImage(icono.getImage());\
-		// Inicializar logicaJuego primero
 
 		JLabel lblSubtitleTabla = new JLabel("SELECCIÓN NUMÉRICA");
 		lblSubtitleTabla.setHorizontalAlignment(SwingConstants.LEFT);
@@ -402,15 +444,15 @@ public class InterfazAhorcado extends JFrame {
 				modeloTabla.setValueAt(matriz[i][j], i, j);
 			}
 		}
-		
+
 		int alturaTabla = 445; // por ejemplo, la altura que quieras para la tabla
 		int numFilas = tablaNumeros.getRowCount();
 		tablaNumeros.setRowHeight(alturaTabla / numFilas);
-		
+
 		int anchoTabla = 445;
 		int numCols = tablaNumeros.getColumnCount();
 		for (int i = 0; i < numCols; i++) {
-		    tablaNumeros.getColumnModel().getColumn(i).setPreferredWidth(anchoTabla / numCols);
+			tablaNumeros.getColumnModel().getColumn(i).setPreferredWidth(anchoTabla / numCols);
 		}
 
 		// Crear área de texto para resultados
@@ -422,7 +464,7 @@ public class InterfazAhorcado extends JFrame {
 		areaResultados
 				.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, COLOR_FONDO),
 						BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-		
+
 		// Crear área de texto para historial
 		areaHistorial = new JTextArea(5, 45);
 		areaHistorial.setEditable(false);
@@ -432,7 +474,7 @@ public class InterfazAhorcado extends JFrame {
 		areaHistorial.setLineWrap(true);
 		areaHistorial.setWrapStyleWord(true);
 		areaHistorial.setBorder(BorderFactory.createEmptyBorder(5, 10, 0, 0));
-		
+
 		// Crear panel central que contendrá la tabla y el área de resultados
 		JPanel panelCentral = new JPanel(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -520,63 +562,68 @@ public class InterfazAhorcado extends JFrame {
 
 		});
 		botonVerMenosDiez.addMouseListener(cursorMano);
-		
-		final ImageIcon originalIcon = new ImageIcon(getClass().getResource("iconoExportarPdf.png"));
 
-		// 2️⃣ Escalar el icono (tamaño normal)
-		final Image imagenEscalada = originalIcon.getImage().getScaledInstance(54, 54, Image.SCALE_SMOOTH);
-		ImageIcon iconoPDF = new ImageIcon(imagenEscalada);
+		// 1️⃣ Cargar recurso de forma segura
+		URL iconUrl1 = getClass().getResource("/gui/iconoExportarPdf.png");
 
-		// 4️⃣ Botón
-		btnExportarPDF = new JButton(iconoPDF);
+		final ImageIcon iconoPDF;
+		final ImageIcon iconoHover;
 
-		// 4️⃣ Estilo plano
+		if (iconUrl1 == null) {
+			System.err.println("❌ iconoExportarPdf.png NO encontrado");
+			iconoPDF = null;
+			iconoHover = null;
+			btnExportarPDF = new JButton("Exportar PDF"); // fallback
+		} else {
+			ImageIcon originalIcon = new ImageIcon(iconUrl1);
+
+			Image imagenNormal = originalIcon.getImage().getScaledInstance(54, 54, Image.SCALE_SMOOTH);
+			iconoPDF = new ImageIcon(imagenNormal);
+
+			Image imagenHover = originalIcon.getImage().getScaledInstance(58, 58, Image.SCALE_SMOOTH);
+			iconoHover = new ImageIcon(imagenHover);
+
+			btnExportarPDF = new JButton(iconoPDF);
+		}
+
+		// 2️⃣ Estilo plano
 		btnExportarPDF.setBorderPainted(false);
 		btnExportarPDF.setContentAreaFilled(false);
 		btnExportarPDF.setFocusPainted(false);
 		btnExportarPDF.setOpaque(false);
-		btnExportarPDF.setCursor(new Cursor(Cursor.HAND_CURSOR)); // cursor mano
+		btnExportarPDF.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-
-		// 6️⃣ Dar tamaño REAL al botón
-		btnExportarPDF.setPreferredSize(new Dimension(58, 48));
-
-		// 5️⃣ Tamaño real y márgenes
+		// 3️⃣ Tamaño
 		btnExportarPDF.setPreferredSize(new Dimension(58, 48));
 		btnExportarPDF.setMargin(new Insets(10, 20, 10, 20));
 
-
-		// 8️⃣ Tooltip
+		// 4️⃣ Tooltip
 		btnExportarPDF.setToolTipText("Exportar resultados a PDF");
 
-		btnExportarPDF.addMouseListener(cursorMano);
+		// 5️⃣ Acción
+		btnExportarPDF.addActionListener(e -> exportarResultadosPDF());
 
-		btnExportarPDF.addActionListener(new ActionListener() {
+		// 6️⃣ Hover SEGURO
+		btnExportarPDF.addMouseListener(new MouseAdapter() {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				exportarResultadosPDF();
+			public void mouseEntered(MouseEvent e) {
+				if (iconoHover != null) {
+					btnExportarPDF.setIcon(iconoHover);
+				}
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				if (iconoPDF != null) {
+					btnExportarPDF.setIcon(iconoPDF);
+				}
 			}
 		});
-		
-		// 8️⃣ Hover con zoom sutil
-		btnExportarPDF.addMouseListener(new java.awt.event.MouseAdapter() {
-		    @Override
-		    public void mouseEntered(MouseEvent e) {
-		        Image imagenHover = originalIcon.getImage().getScaledInstance(58, 58, Image.SCALE_SMOOTH);
-		        btnExportarPDF.setIcon(new ImageIcon(imagenHover));
-		    }
-
-		    @Override
-		    public void mouseExited(MouseEvent e) {
-		        btnExportarPDF.setIcon(iconoPDF); // vuelve al tamaño normal
-		    }
-		});
-
 		botonVerMenosDiez.addActionListener(e -> {
 			Set<Integer> seleccionados = obtenerNumerosSeleccionados();
 			if (seleccionados.isEmpty()) {
 				// Crear un botón personalizado para el JOptionPane
-				AlertasUI.mostrarAlerta(this,"No hay números seleccionados.");
+				AlertasUI.mostrarAlerta(this, "No hay números seleccionados.");
 				return;
 
 			}

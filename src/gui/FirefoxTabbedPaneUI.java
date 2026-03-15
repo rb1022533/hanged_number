@@ -15,6 +15,7 @@ public class FirefoxTabbedPaneUI extends BasicTabbedPaneUI {
 	private final Color COLOR_INACTIVA = new Color(240, 240, 240);
 	private final Color COLOR_HOVER = new Color(200, 200, 200);
 	private final Color COLOR_TEXTO = new Color(30, 30, 30);
+	private final Color COLOR_AZUL = new Color(37, 99, 235); // reemplaza con tu azul exacto
 
 	private final int SEPARACION = 8;
 
@@ -46,7 +47,7 @@ public class FirefoxTabbedPaneUI extends BasicTabbedPaneUI {
 				}
 
 				tabPane.repaint();
-				
+
 			}
 
 		});
@@ -59,7 +60,7 @@ public class FirefoxTabbedPaneUI extends BasicTabbedPaneUI {
 				tabPane.repaint();
 			}
 		});
-		
+
 		// 🔹 Activar navegación por teclado
 		installKeyboardNavigation();
 	}
@@ -83,27 +84,40 @@ public class FirefoxTabbedPaneUI extends BasicTabbedPaneUI {
 		int drawY = y + 2;
 		int drawH = h - 2;
 
-// 🔹 Dibujar sombra solo si es la pestaña activa
-		if (isSelected) {
-			Color shadowColor = new Color(0, 0, 0, 30);
-			g2.setColor(shadowColor);
-
-			int shadowOffsetX = 2;
-			int shadowOffsetY = 2;
-			g2.fillRect(drawX + shadowOffsetX, drawY + shadowOffsetY, drawW, drawH);
-		}
+		// 🔹 Dibujar sombra solo si es la pestaña activa
+//		if (isSelected) {
+//			Color shadowColor = new Color(0, 0, 0, 30);
+//			g2.setColor(shadowColor);
+//			int shadowOffsetX = 2;
+//			int shadowOffsetY = 2;
+//			g2.fillRect(drawX + shadowOffsetX, drawY + shadowOffsetY, drawW, drawH);
+//		}
 
 		// Fondo de la pestaña
 		Color color;
 		if (tabIndex == hoverTab) {
 			color = COLOR_HOVER;
-		} else if (isSelected) {
-			color = COLOR_ACTIVA;
+
 		} else {
 			color = COLOR_INACTIVA;
 		}
 		g2.setColor(color);
 		g2.fillRect(drawX, drawY, drawW, drawH);
+
+		// 🔹 Franja azul al final (si la pestaña está activa)
+		if (isSelected) {
+			String title = tabPane.getTitleAt(tabIndex);
+			FontMetrics metrics = g.getFontMetrics(tabPane.getFont());
+			int textWidth = metrics.stringWidth(title);
+
+			// Centrar la franja debajo del texto
+			int stripeHeight = 3;
+			int stripeX = drawX + (drawW - textWidth) / 2;
+			int stripeY = drawY + drawH - stripeHeight;
+
+			g2.setColor(COLOR_AZUL);
+			g2.fillRect(stripeX, stripeY, textWidth, stripeHeight);
+		}
 	}
 
 	// 🔴 Eliminamos TODOS los bordes
@@ -183,27 +197,27 @@ public class FirefoxTabbedPaneUI extends BasicTabbedPaneUI {
 	}
 
 	private void installKeyboardNavigation() {
-	    InputMap im = tabPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW); // <-- cambio aquí
-	    ActionMap am = tabPane.getActionMap();
+		InputMap im = tabPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW); // <-- cambio aquí
+		ActionMap am = tabPane.getActionMap();
 
-	    // Ctrl+Tab -> siguiente pestaña
-	    im.put(KeyStroke.getKeyStroke("ctrl TAB"), "nextTab");
-	    am.put("nextTab", new AbstractAction() {
-	        @Override
-	        public void actionPerformed(ActionEvent e) {
-	            int next = (tabPane.getSelectedIndex() + 1) % tabPane.getTabCount();
-	            tabPane.setSelectedIndex(next);
-	        }
-	    });
+		// Ctrl+Tab -> siguiente pestaña
+		im.put(KeyStroke.getKeyStroke("ctrl TAB"), "nextTab");
+		am.put("nextTab", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int next = (tabPane.getSelectedIndex() + 1) % tabPane.getTabCount();
+				tabPane.setSelectedIndex(next);
+			}
+		});
 
-	    // Ctrl+Shift+Tab -> pestaña anterior
-	    im.put(KeyStroke.getKeyStroke("ctrl shift TAB"), "previousTab");
-	    am.put("previousTab", new AbstractAction() {
-	        @Override
-	        public void actionPerformed(ActionEvent e) {
-	            int prev = (tabPane.getSelectedIndex() - 1 + tabPane.getTabCount()) % tabPane.getTabCount();
-	            tabPane.setSelectedIndex(prev);
-	        }
-	    });
+		// Ctrl+Shift+Tab -> pestaña anterior
+		im.put(KeyStroke.getKeyStroke("ctrl shift TAB"), "previousTab");
+		am.put("previousTab", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int prev = (tabPane.getSelectedIndex() - 1 + tabPane.getTabCount()) % tabPane.getTabCount();
+				tabPane.setSelectedIndex(prev);
+			}
+		});
 	}
 }

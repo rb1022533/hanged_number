@@ -20,7 +20,6 @@ import java.net.URL;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -134,6 +133,129 @@ public class MostrarMenosDiez extends JFrame {
 		// Ordenamos correctamente la lista
 		List<NumerosDiezMenos> listaOrdenada = new ArrayList<>(menosDiez);
 		listaOrdenada.sort(Comparator.comparingInt(NumerosDiezMenos::getNumeroDiezMenos));
+
+		// Detectar grupos de cuatro en la misma línea
+		Set<Integer> usadosEnGrupoCuatro = new java.util.HashSet<>();
+
+		for (int i = 0; i < listaOrdenada.size(); i++) {
+
+			NumerosDiezMenos par1 = listaOrdenada.get(i);
+
+			for (int j = i + 1; j < listaOrdenada.size(); j++) {
+
+				NumerosDiezMenos par2 = listaOrdenada.get(j);
+
+				int diff1 = par2.getNumeroDiezMenos() - par1.getNumeroDiezMenos();
+				int diff2 = par2.getNumeroBase() - par1.getNumeroBase();
+
+				// misma línea vertical
+				if (Math.abs(diff1) == Math.abs(diff2) && diff1 % 10 == 0) {
+
+					// Caso 1
+					int ref1 = par1.getNumeroBase();
+					int diezMenos2 = par2.getNumeroDiezMenos();
+
+					int diffA = Math.abs(diezMenos2 - ref1);
+					int casillasA = (diffA / 10) - 1;
+
+					// Caso 2
+					int ref2 = par2.getNumeroBase();
+					int diezMenos1 = par1.getNumeroDiezMenos();
+
+					int diffB = Math.abs(diezMenos1 - ref2);
+					int casillasB = (diffB / 10) - 1;
+
+					if (par1.getNumeroBase() % 10 != par2.getNumeroBase() % 10) {
+						continue;
+					}
+
+					if ((casillasA == 3 || casillasA == 5) || (casillasB == 3 || casillasB == 5)
+							|| (casillasA == 1 && casillasB == 5) || (casillasB == 1 && casillasA == 5)) {
+
+						usadosEnGrupoCuatro.add(par1.getNumeroDiezMenos());
+						usadosEnGrupoCuatro.add(par1.getNumeroBase());
+
+						usadosEnGrupoCuatro.add(par2.getNumeroDiezMenos());
+						usadosEnGrupoCuatro.add(par2.getNumeroBase());
+
+						sbOtros.append("Menos diez:   ").append(par1.getNumeroDiezMenos()).append("  ")
+								.append(par1.getNumeroBase()).append("\n");
+
+						/* calcular ahorcados */
+						int a = par1.getNumeroBase();
+						int b = par2.getNumeroDiezMenos();
+
+						// punto medio vertical
+						int ahorcado1 = (a + b) / 2;
+
+						// segundo ahorcado (50 más abajo)
+						int ahorcado2 = ahorcado1 + 50;
+						if (ahorcado2 > 100) {
+							ahorcado2 -= 100;
+						}
+
+						sbOtros.append("Ahorcados:     ");
+
+						boolean imprimirAlgo = false;
+
+						if (!numerosSeleccionados.contains(ahorcado1)) {
+							sbOtros.append(ahorcado1);
+							imprimirAlgo = true;
+						}
+
+						if (!numerosSeleccionados.contains(ahorcado2)) {
+							if (imprimirAlgo) {
+								sbOtros.append(" ");
+							}
+							sbOtros.append(ahorcado2);
+							imprimirAlgo = true;
+						}
+
+						// -------- NUEVO AHORCADO POR RELACIÓN ±20 --------
+
+						int baseActual = par1.getNumeroBase();
+						int numeroMas40 = baseActual + 40;
+						int ahorcadoExtra = baseActual + 20;
+
+						if (numerosSeleccionados.contains(numeroMas40)) {
+
+							if (!numerosSeleccionados.contains(ahorcadoExtra) && ahorcadoExtra != ahorcado1
+									&& ahorcadoExtra != ahorcado2) {
+
+								if (imprimirAlgo) {
+									sbOtros.append(" ");
+								}
+
+								sbOtros.append(ahorcadoExtra);
+								imprimirAlgo = true;
+							}
+						}
+
+						sbOtros.append("\n");
+
+						int extraIzquierda = par2.getNumeroDiezMenos() - 20;
+						int extraDerecha = par2.getNumeroBase() + 20;
+
+						boolean tieneIzquierda = numerosSeleccionados.contains(extraIzquierda);
+						boolean tieneDerecha = numerosSeleccionados.contains(extraDerecha);
+
+						sbOtros.append("Menos diez:   ");
+
+						if (tieneIzquierda) {
+							sbOtros.append(extraIzquierda).append("  ( )  ");
+						}
+
+						sbOtros.append(par2.getNumeroDiezMenos()).append("  ").append(par2.getNumeroBase());
+
+						if (tieneDerecha) {
+							sbOtros.append("  ( )  ").append(extraDerecha);
+						}
+
+						sbOtros.append("\n\n");
+					}
+				}
+			}
+		}
 
 		Set<Integer> paresEnGrupo = new java.util.HashSet<>();
 
@@ -252,13 +374,17 @@ public class MostrarMenosDiez extends JFrame {
 					// ----------------------------
 					// 2️⃣ Línea siguiente con extras
 					sbOtros.append("Menos diez:   ");
-					if (tieneExtraIzquierda) {
-						sbOtros.append(extraIzquierda).append("  ").append("( )  ");
+
+					boolean tieneIzquierda = numerosSeleccionados.contains(extraIzquierda);
+					boolean tieneDerecha = numerosSeleccionados.contains(extraDerecha);
+
+					if (tieneIzquierda) {
+						sbOtros.append(extraIzquierda).append("  ( )  ");
 					}
 
 					sbOtros.append(numeroDiezMenos).append("  ").append(numeroBase);
 
-					if (numerosSeleccionados.contains(extraDerecha)) {
+					if (tieneDerecha) {
 						sbOtros.append("  ( )  ").append(extraDerecha);
 					}
 
@@ -272,7 +398,8 @@ public class MostrarMenosDiez extends JFrame {
 			int diezMenos = num.getNumeroDiezMenos();
 			int base = num.getNumeroBase();
 
-			if (paresEnGrupo.contains(diezMenos)) {
+			if (paresEnGrupo.contains(diezMenos) || usadosEnGrupoCuatro.contains(diezMenos)
+					|| usadosEnGrupoCuatro.contains(base)) {
 				continue;
 			}
 
@@ -316,7 +443,7 @@ public class MostrarMenosDiez extends JFrame {
 		scrollOtros.getVerticalScrollBar().setUI(new ModernScrollBarUI());
 		scrollOtros.getHorizontalScrollBar().setUI(new ModernScrollBarUI());
 
-		pestañas.addTab("Otros Resultados", scrollOtros);
+		pestañas.addTab("Grupos de a Cuatro", scrollOtros);
 
 		// Agregar pestañas al centro
 		add(pestañas, BorderLayout.CENTER);
@@ -390,7 +517,7 @@ public class MostrarMenosDiez extends JFrame {
 		// 6?? Acción al hacer clic
 		btnExportarPDF.addActionListener(e -> {
 			exportarPDF(area.getText(), "Resultados 10 Menos");
-			exportarPDF(areaOtros.getText(), "Otros Resultados");
+			exportarPDF(areaOtros.getText(), "Grupos de a Cuatro");
 		});
 
 		// PANEL SUPERIOR (TÍTULO + BOTONES)

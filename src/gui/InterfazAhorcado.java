@@ -49,6 +49,7 @@ public class InterfazAhorcado extends JFrame {
 	private Set<Integer> numerosAhorcadosAdicionales = new HashSet<>();
 	private TablaEventHandler handler;
 	private Set<String> combinacionesProcesadas = new HashSet<>();
+	private MostrarMenosDiez ventanaMenosDiez;
 
 	// Lista para almacenar todas las combinaciones detectadas
 	private List<String> todasLasCombinaciones = new ArrayList<>();
@@ -269,7 +270,7 @@ public class InterfazAhorcado extends JFrame {
 			}
 		};
 
-		JLabel lblSubtitleTabla = new JLabel("SELECCIÓN NUMÉRICA");
+		JLabel lblSubtitleTabla = new JLabel("TABLA DE SELECCIÓN");
 		lblSubtitleTabla.setHorizontalAlignment(SwingConstants.LEFT);
 		lblSubtitleTabla.setFont(new Font("Arial", Font.BOLD, 18));
 		lblSubtitleTabla.setForeground(COLOR_TEXTO);
@@ -629,8 +630,21 @@ public class InterfazAhorcado extends JFrame {
 			}
 
 			int numeroAhorcado = 0;
-			MostrarMenosDiez ventana = new MostrarMenosDiez(obtenerNumerosSeleccionados(), this, numeroAhorcado);
-			ventana.setVisible(true);
+			if (ventanaMenosDiez == null || !ventanaMenosDiez.isVisible()) {
+			    ventanaMenosDiez = new MostrarMenosDiez(obtenerNumerosSeleccionados(), this, numeroAhorcado);
+			    
+			    // 👇 AQUÍ agregas el listener
+			    ventanaMenosDiez.addWindowListener(new java.awt.event.WindowAdapter() {
+			        @Override
+			        public void windowClosed(java.awt.event.WindowEvent e) {
+			            ventanaMenosDiez = null;
+			        }
+			    });
+			    
+			    ventanaMenosDiez.setVisible(true);
+			} else {
+			    ventanaMenosDiez.toFront(); // la trae al frente si ya existe
+			}
 		});
 
 		botonReiniciar.registerKeyboardAction(e -> botonReiniciar.doClick(),
@@ -1693,6 +1707,11 @@ public class InterfazAhorcado extends JFrame {
 			areaHistorial.setText("");
 		tablaNumeros.clearSelection();
 		tablaNumeros.repaint();
+		
+		if (ventanaMenosDiez != null) {
+		    ventanaMenosDiez.dispose();
+		    ventanaMenosDiez = null;
+		}
 	}
 
 	class TablaEventHandler extends MouseAdapter {

@@ -415,16 +415,12 @@ public class MostrarMenosDiez extends JFrame {
 				numerosGrupo.add(a2);
 				numerosGrupo.add(b2);
 
-				// Extras del primer grupo
+				// Extras reales del primer grupo
 				agregarSiExiste(numerosGrupo, detectarIzquierda(a1, seleccionados));
-				agregarSiExiste(numerosGrupo, detectarIzquierda(b1, seleccionados));
-				agregarSiExiste(numerosGrupo, detectarDerecha(a1, seleccionados));
 				agregarSiExiste(numerosGrupo, detectarDerecha(b1, seleccionados));
 
-				// Extras del segundo grupo
+				// Extras reales del segundo grupo
 				agregarSiExiste(numerosGrupo, detectarIzquierda(a2, seleccionados));
-				agregarSiExiste(numerosGrupo, detectarIzquierda(b2, seleccionados));
-				agregarSiExiste(numerosGrupo, detectarDerecha(a2, seleccionados));
 				agregarSiExiste(numerosGrupo, detectarDerecha(b2, seleccionados));
 
 // 🔹 Detectar ahorcados
@@ -492,25 +488,28 @@ public class MostrarMenosDiez extends JFrame {
 
 	private Integer detectarDerecha(int numero, Set<Integer> seleccionados) {
 		int candidato = numero + 20;
+
+		if (candidato > 100) {
+			candidato -= 100;
+		}
+
 		return seleccionados.contains(candidato) ? candidato : null;
 	}
 
 	private Integer detectarIzquierda(int numero, Set<Integer> seleccionados) {
 		int candidato = numero - 20;
+
+		if (candidato <= 0) {
+			candidato += 100;
+		}
+
 		return seleccionados.contains(candidato) ? candidato : null;
 	}
 
 	private String formatearGrupo(int a, int b, Set<Integer> seleccionados) {
 
 		Integer extraIzq = detectarIzquierda(a, seleccionados);
-		if (extraIzq == null) {
-			extraIzq = detectarIzquierda(b, seleccionados);
-		}
-
 		Integer extraDer = detectarDerecha(b, seleccionados);
-		if (extraDer == null) {
-			extraDer = detectarDerecha(a, seleccionados);
-		}
 
 		StringBuilder grupo = new StringBuilder();
 

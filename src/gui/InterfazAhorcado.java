@@ -92,111 +92,111 @@ public class InterfazAhorcado extends JFrame {
 
 	private void exportarResultadosPDF() {
 
-	    String texto = areaHistorial.getText();
+		String texto = areaHistorial.getText();
 
-	    if (texto == null || texto.trim().isEmpty()) {
-	        AlertasUI.mostrarAlerta(this, "No hay resultados para exportar.");
-	        return;
-	    }
+		if (texto == null || texto.trim().isEmpty()) {
+			AlertasUI.mostrarAlerta(this, "No hay resultados para exportar.");
+			return;
+		}
 
-	    FileDialog fd = new FileDialog(this, "Guardar resultados en PDF", FileDialog.SAVE);
-	    fd.setFile("Resultados_Ahorcado.pdf");
-	    fd.setVisible(true);
+		FileDialog fd = new FileDialog(this, "Guardar resultados en PDF", FileDialog.SAVE);
+		fd.setFile("Resultados_Ahorcado.pdf");
+		fd.setVisible(true);
 
-	    String directory = fd.getDirectory();
-	    String filename = fd.getFile();
-	    if (directory == null || filename == null) return;
+		String directory = fd.getDirectory();
+		String filename = fd.getFile();
+		if (directory == null || filename == null)
+			return;
 
-	    try {
+		try {
 
-	        File archivo = new File(directory, filename);
-	        if (!archivo.getName().toLowerCase().endsWith(".pdf")) {
-	            archivo = new File(archivo.getAbsolutePath() + ".pdf");
-	        }
+			File archivo = new File(directory, filename);
+			if (!archivo.getName().toLowerCase().endsWith(".pdf")) {
+				archivo = new File(archivo.getAbsolutePath() + ".pdf");
+			}
 
-	        archivo = archivo.getCanonicalFile();
+			archivo = archivo.getCanonicalFile();
 
-	        if (!archivo.getParentFile().canWrite()) {
-	            AlertasUI.mostrarAlerta(this,
-	                    "No tienes permiso para guardar en esa carpeta.\n\n" +
-	                            "Intenta usar Documentos o Escritorio.");
-	            return;
-	        }
+			if (!archivo.getParentFile().canWrite()) {
+				AlertasUI.mostrarAlerta(this,
+						"No tienes permiso para guardar en esa carpeta.\n\n" + "Intenta usar Documentos o Escritorio.");
+				return;
+			}
 
-	        String[] lineas = obtenerResultadosParaExportar();
-	        if (lineas.length == 0 || (lineas.length == 1 && lineas[0].trim().isEmpty())) {
-	            JOptionPane.showMessageDialog(this, "No hay resultados para exportar.",
-	                    "Aviso", JOptionPane.WARNING_MESSAGE);
-	            return;
-	        }
+			String[] lineas = obtenerResultadosParaExportar();
+			if (lineas.length == 0 || (lineas.length == 1 && lineas[0].trim().isEmpty())) {
+				JOptionPane.showMessageDialog(this, "No hay resultados para exportar.", "Aviso",
+						JOptionPane.WARNING_MESSAGE);
+				return;
+			}
 
-	        int paginaActual = 1;
+			int paginaActual = 1;
 
-	        try (PDDocument document = new PDDocument()) {
+			try (PDDocument document = new PDDocument()) {
 
-	            PDPage page = new PDPage(PDRectangle.LETTER);
-	            document.addPage(page);
+				PDPage page = new PDPage(PDRectangle.LETTER);
+				document.addPage(page);
 
-	            PDPageContentStream content = new PDPageContentStream(document, page);
-	            content.setFont(PDType1Font.HELVETICA, 11);
+				PDPageContentStream content = new PDPageContentStream(document, page);
+				content.setFont(PDType1Font.HELVETICA, 11);
 
-	            dibujarTitulo(content, "Resultados Ahorcados");
-	            numerarPagina(content, paginaActual, -1);
+				dibujarTitulo(content, "Resultados Ahorcados");
+				numerarPagina(content, paginaActual, -1);
 
-	            float margin = 50;
-	            float leading = 14.5f;
-	            int numColumnas = 2;
+				float margin = 50;
+				float leading = 14.5f;
+				int numColumnas = 2;
 
-	            float pageWidth = PDRectangle.LETTER.getWidth();
-	            float pageHeight = PDRectangle.LETTER.getHeight();
-	            float columnWidth = (pageWidth - 2 * margin) / numColumnas;
+				float pageWidth = PDRectangle.LETTER.getWidth();
+				float pageHeight = PDRectangle.LETTER.getHeight();
+				float columnWidth = (pageWidth - 2 * margin) / numColumnas;
 
-	            int currentColumn = 0;
-	            float yPosition = pageHeight - margin - 40;
+				int currentColumn = 0;
+				float yPosition = pageHeight - margin - 40;
 
-	            for (String linea : lineas) {
+				for (String linea : lineas) {
 
-	                if (yPosition <= margin) {
-	                    currentColumn++;
-	                    yPosition = pageHeight - margin;
+					if (yPosition <= margin) {
+						currentColumn++;
+						yPosition = pageHeight - margin;
 
-	                    if (currentColumn >= numColumnas) {
-	                        content.close();
-	                        paginaActual++;
+						if (currentColumn >= numColumnas) {
+							content.close();
+							paginaActual++;
 
-	                        page = new PDPage(PDRectangle.LETTER);
-	                        document.addPage(page);
-	                        content = new PDPageContentStream(document, page);
-	                        content.setFont(PDType1Font.HELVETICA, 11);
+							page = new PDPage(PDRectangle.LETTER);
+							document.addPage(page);
+							content = new PDPageContentStream(document, page);
+							content.setFont(PDType1Font.HELVETICA, 11);
 
-	                        dibujarTitulo(content, "Resultados Ahorcados");
-	                        numerarPagina(content, paginaActual, -1);
+							dibujarTitulo(content, "Resultados Ahorcados");
+							numerarPagina(content, paginaActual, -1);
 
-	                        currentColumn = 0;
-	                        yPosition = pageHeight - margin - 40;
-	                    }
-	                }
+							currentColumn = 0;
+							yPosition = pageHeight - margin - 40;
+						}
+					}
 
-	                float xPosition = margin + currentColumn * columnWidth;
+					float xPosition = margin + currentColumn * columnWidth;
 
-	                content.beginText();
-	                content.newLineAtOffset(xPosition, yPosition);
-	                content.showText(linea);
-	                content.endText();
+					content.beginText();
+					content.newLineAtOffset(xPosition, yPosition);
+					content.showText(linea);
+					content.endText();
 
-	                yPosition -= leading;
-	            }
+					yPosition -= leading;
+				}
 
-	            content.close();
-	            document.save(archivo);
-	        }
+				content.close();
+				document.save(archivo);
+			}
 
-	        AlertasUI.mostrarAlerta(this, "PDF Exportado correctamente");
+			AlertasUI.mostrarAlerta(this, "PDF Exportado correctamente");
 
-	    } catch (Exception ex) {
-	        ex.printStackTrace();
-	        AlertasUI.mostrarAlerta(this, "Error al exportar el PDF:\n" + ex.getMessage());
-	    }
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			AlertasUI.mostrarAlerta(this, "Error al exportar el PDF:\n" + ex.getMessage());
+		}
 	}
 
 	private String[] obtenerResultadosParaExportar() {
@@ -631,19 +631,19 @@ public class InterfazAhorcado extends JFrame {
 
 			int numeroAhorcado = 0;
 			if (ventanaMenosDiez == null || !ventanaMenosDiez.isVisible()) {
-			    ventanaMenosDiez = new MostrarMenosDiez(obtenerNumerosSeleccionados(), this, numeroAhorcado);
-			    
-			    // 👇 AQUÍ agregas el listener
-			    ventanaMenosDiez.addWindowListener(new java.awt.event.WindowAdapter() {
-			        @Override
-			        public void windowClosed(java.awt.event.WindowEvent e) {
-			            ventanaMenosDiez = null;
-			        }
-			    });
-			    
-			    ventanaMenosDiez.setVisible(true);
+				ventanaMenosDiez = new MostrarMenosDiez(obtenerNumerosSeleccionados(), this, numeroAhorcado);
+
+				// 👇 AQUÍ agregas el listener
+				ventanaMenosDiez.addWindowListener(new java.awt.event.WindowAdapter() {
+					@Override
+					public void windowClosed(java.awt.event.WindowEvent e) {
+						ventanaMenosDiez = null;
+					}
+				});
+
+				ventanaMenosDiez.setVisible(true);
 			} else {
-			    ventanaMenosDiez.toFront(); // la trae al frente si ya existe
+				ventanaMenosDiez.toFront(); // la trae al frente si ya existe
 			}
 		});
 
@@ -1707,10 +1707,10 @@ public class InterfazAhorcado extends JFrame {
 			areaHistorial.setText("");
 		tablaNumeros.clearSelection();
 		tablaNumeros.repaint();
-		
+
 		if (ventanaMenosDiez != null) {
-		    ventanaMenosDiez.dispose();
-		    ventanaMenosDiez = null;
+			ventanaMenosDiez.dispose();
+			ventanaMenosDiez = null;
 		}
 	}
 

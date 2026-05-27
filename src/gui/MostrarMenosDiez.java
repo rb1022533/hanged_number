@@ -1,6 +1,9 @@
 package gui;
 
 import logic.NumerosDiezMenos;
+
+import logic.RelacionHN;
+
 import javax.swing.*;
 
 import gui.AlertasUI;
@@ -21,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import gui.tabs.DetachableTabbedPane;
+
 public class MostrarMenosDiez extends JFrame {
 
 	private final Color COLOR_PRIMARIO = new Color(37, 99, 235);
@@ -30,14 +35,19 @@ public class MostrarMenosDiez extends JFrame {
 	private final Color COLOR_TEXTAREAS = new Color(255, 255, 255);
 
 	private MouseAdapter cursorMano;
+	private DetachableTabbedPane pestañas;
+	private String textoRelaciones = "";
 
-	public MostrarMenosDiez(Set<Integer> numerosSeleccionados) {
-		this(numerosSeleccionados, null, 0); // delega al constructor principal
+	public MostrarMenosDiez(Set<Integer> numerosSeleccionados, DetachableTabbedPane pestañas) {
+
+		this(numerosSeleccionados, null, 0, pestañas);
 	}
 
 	// Constructor
-	public MostrarMenosDiez(Set<Integer> numerosSeleccionados, InterfazAhorcado interfaz, int numeroAhorcado) {
+	public MostrarMenosDiez(Set<Integer> numerosSeleccionados, InterfazAhorcado interfaz, int numeroAhorcado,
+			DetachableTabbedPane pestañas) {
 
+		this.pestañas = pestañas;
 		URL iconUrl = getClass().getResource("/gui/favicon.png");
 		if (iconUrl != null) {
 			setIconImage(new ImageIcon(iconUrl).getImage());
@@ -80,7 +90,7 @@ public class MostrarMenosDiez extends JFrame {
 
 		// PROBAR SCROLL
 		JScrollPane scrollPaneArea = new JScrollPane(area);
-		scrollPaneArea.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+		scrollPaneArea.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 0));
 		scrollPaneArea.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPaneArea.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -101,9 +111,6 @@ public class MostrarMenosDiez extends JFrame {
 			area.setText(sb.toString());
 		}
 
-		// Crear pestañas
-		JTabbedPane pestañas = new JTabbedPane();
-
 		pestañas.setUI(new FirefoxTabbedPaneUI());
 
 		pestañas.setOpaque(false);
@@ -118,18 +125,18 @@ public class MostrarMenosDiez extends JFrame {
 		pestañas.addTab("10 Menos", scrollPaneArea);
 
 		// Pestaña 2 - Otros resultados (por ahora vacía)
-		JTextArea areaOtros = new JTextArea();
-		areaOtros.setEditable(false);
-		areaOtros.setFont(new Font("Arial", Font.PLAIN, 16));
-		areaOtros.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		areaOtros.setLineWrap(true);
-		areaOtros.setWrapStyleWord(true);
-		areaOtros.setBackground(COLOR_TEXTAREAS);
-		areaOtros.setForeground(COLOR_TEXTO);
+		JTextArea areaGruposDeCuatro = new JTextArea();
+		areaGruposDeCuatro.setEditable(false);
+		areaGruposDeCuatro.setFont(new Font("Arial", Font.PLAIN, 16));
+		areaGruposDeCuatro.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		areaGruposDeCuatro.setLineWrap(true);
+		areaGruposDeCuatro.setWrapStyleWord(true);
+		areaGruposDeCuatro.setBackground(COLOR_TEXTAREAS);
+		areaGruposDeCuatro.setForeground(COLOR_TEXTO);
 
 		// PROBAR SCROLL
-		JScrollPane scrollPaneAreaOtros = new JScrollPane(areaOtros);
-		scrollPaneAreaOtros.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+		JScrollPane scrollPaneAreaOtros = new JScrollPane(areaGruposDeCuatro);
+		scrollPaneAreaOtros.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 0));
 		scrollPaneAreaOtros.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPaneAreaOtros.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -143,15 +150,69 @@ public class MostrarMenosDiez extends JFrame {
 		scrollPaneAreaOtros.getHorizontalScrollBar().setUI(new ModernScrollBarUI());
 
 		if (menosDiez.isEmpty()) {
-			areaOtros.setText("No hay resultados para mostrar.");
+
+			areaGruposDeCuatro.setText("No hay grupos de cuatro para mostrar.");
+
 		} else if (interfaz == null) {
-			areaOtros.setText("No hay datos de ahorcados disponibles.");
+
+			areaGruposDeCuatro.setText("No hay datos de ahorcados disponibles.");
+
 		} else {
+
 			String resultado = construirGruposConAhorcados(menosDiez, interfaz, numerosSeleccionados);
-			areaOtros.setText(resultado);
+
+			if (resultado == null || resultado.trim().isEmpty()) {
+
+				areaGruposDeCuatro.setText("No hay grupos de cuatro para mostrar.");
+
+			} else {
+
+				areaGruposDeCuatro.setText(resultado);
+
+			}
 		}
 
 		pestañas.addTab("Grupos de Cuatro", scrollPaneAreaOtros);
+
+		// ===============================
+		// NUEVA PESTAÑA RELACIONES
+		// ===============================
+
+		JTextArea areaRelaciones = new JTextArea();
+
+		areaRelaciones.setEditable(false);
+		areaRelaciones.setFont(new Font("Arial", Font.PLAIN, 16));
+		areaRelaciones.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		areaRelaciones.setLineWrap(true);
+		areaRelaciones.setWrapStyleWord(true);
+		areaRelaciones.setBackground(COLOR_TEXTAREAS);
+		areaRelaciones.setForeground(COLOR_TEXTO);
+
+		// MOSTRAR RESULTADOS EN PESTAÑA "RELACIONES"
+		textoRelaciones = RelacionHN.generarResultados(numerosSeleccionados);
+
+		if (textoRelaciones.isBlank()) {
+			areaRelaciones.setText("No hay relaciones válidas.");
+		} else {
+			areaRelaciones.setText(textoRelaciones);
+		}
+
+		// PROBAR SCROLL
+		JScrollPane scrollPaneareaRelaciones = new JScrollPane(areaRelaciones);
+		scrollPaneareaRelaciones.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 0));
+		scrollPaneareaRelaciones.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPaneareaRelaciones.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+		scrollPaneareaRelaciones.getVerticalScrollBar().setPreferredSize(new Dimension(8, Integer.MAX_VALUE)); // ancho
+																												// vertical
+		scrollPaneareaRelaciones.getHorizontalScrollBar().setPreferredSize(new Dimension(Integer.MAX_VALUE, 8)); // alto
+		// horizontal
+
+		// Aplicar el scroll moderno
+		scrollPaneareaRelaciones.getVerticalScrollBar().setUI(new ModernScrollBarUI());
+		scrollPaneareaRelaciones.getHorizontalScrollBar().setUI(new ModernScrollBarUI());
+
+		pestañas.addTab("Relaciones", scrollPaneareaRelaciones);
 
 		// Agregar pestañas al centro
 		add(pestañas, BorderLayout.CENTER);
@@ -222,18 +283,19 @@ public class MostrarMenosDiez extends JFrame {
 			}
 		});
 
-		// 6?? Acción al hacer clic
 		btnExportarPDF.addActionListener(e -> {
-			exportarPDF(area.getText(), "Resultados 10 Menos");
-			exportarPDF(areaOtros.getText(), "Grupos de Cuatro");
+
+			mostrarDialogoExportacion(area.getText(), areaGruposDeCuatro.getText(), textoRelaciones);
+
 		});
 
 		// PANEL SUPERIOR (TÍTULO + BOTONES)
 		JPanel panelSuperior = new JPanel(new BorderLayout());
 		panelSuperior.setBackground(COLOR_FONDO);
+		panelSuperior.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
 
 		// --------- TÍTULO (IZQUIERDA) ---------
-		JLabel lblSubtitleTabla = new JLabel("NÚMEROS 10 MENOS");
+		JLabel lblSubtitleTabla = new JLabel("OPERACIONES");
 		lblSubtitleTabla.setFont(new Font("Arial", Font.BOLD, 18));
 		lblSubtitleTabla.setForeground(COLOR_TEXTO);
 		lblSubtitleTabla.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0)); // margen izquierdo
@@ -532,4 +594,257 @@ public class MostrarMenosDiez extends JFrame {
 		}
 	}
 
+	private boolean intentarExportar(String texto, String titulo) {
+		if (texto != null && !texto.trim().isEmpty() && !texto.contains("No hay")) {
+			exportarPDF(texto, titulo);
+			return true;
+		}
+		return false;
+	}
+
+	private void mostrarDialogoExportacion(String txtMenos10, String txtGrupos, String txtRelaciones) {
+
+		boolean hayMenos10 = txtMenos10 != null && !txtMenos10.trim().isEmpty() && !txtMenos10.contains("No hay");
+
+		boolean hayGrupos = txtGrupos != null && !txtGrupos.trim().isEmpty() && !txtGrupos.contains("No hay");
+
+		boolean hayRelaciones = txtRelaciones != null && !txtRelaciones.trim().isEmpty()
+				&& !txtRelaciones.contains("No hay");
+
+		if (!hayMenos10 && !hayGrupos && !hayRelaciones) {
+
+			AlertasUI.mostrarAlerta(this, "No hay resultados disponibles para exportar.");
+
+			return;
+		}
+
+		// ===== CREAR DIÁLOGO =====
+
+		JDialog dialogo = new JDialog(this, "Exportar PDF", true);
+
+		URL iconUrl = getClass().getResource("/gui/favicon.png");
+		if (iconUrl != null) {
+			dialogo.setIconImage(new ImageIcon(iconUrl).getImage());
+		}
+
+		dialogo.setSize(420, 320);
+		dialogo.setLocationRelativeTo(this);
+		dialogo.setResizable(false);
+
+		Container cp = dialogo.getContentPane();
+		cp.setBackground(COLOR_FONDO);
+		cp.setLayout(new BorderLayout());
+
+		// ===== TÍTULO =====
+
+		JLabel titulo = new JLabel("Seleccionar resultados");
+
+		titulo.setFont(new Font("Arial", Font.BOLD, 18));
+
+		titulo.setForeground(COLOR_TEXTO);
+
+		titulo.setBorder(BorderFactory.createEmptyBorder(15, 20, 10, 20));
+
+		// ===== PANEL CENTRAL =====
+
+		JPanel panelCentro = new JPanel();
+
+		panelCentro.setBackground(COLOR_FONDO);
+
+		panelCentro.setLayout(new BoxLayout(panelCentro, BoxLayout.Y_AXIS));
+
+		panelCentro.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+		// ===== CHECKBOX =====
+
+		JCheckBox chkTodo = crearCheckBox("Seleccionar todo");
+
+		JCheckBox chk10 = crearCheckBox("10 Menos");
+
+		JCheckBox chkGrupos = crearCheckBox("Grupos de Cuatro");
+
+		JCheckBox chkRel = crearCheckBox("Relaciones");
+
+		chk10.setEnabled(hayMenos10);
+		chkGrupos.setEnabled(hayGrupos);
+		chkRel.setEnabled(hayRelaciones);
+
+		chkTodo.addActionListener(ev -> {
+
+			boolean estado = chkTodo.isSelected();
+
+			if (chk10.isEnabled())
+				chk10.setSelected(estado);
+
+			if (chkGrupos.isEnabled())
+				chkGrupos.setSelected(estado);
+
+			if (chkRel.isEnabled())
+				chkRel.setSelected(estado);
+
+		});
+		// Distancia entre checkbox
+		panelCentro.add(chkTodo);
+		panelCentro.add(Box.createVerticalStrut(24));
+		panelCentro.add(chk10);
+		panelCentro.add(Box.createVerticalStrut(8));
+		panelCentro.add(chkGrupos);
+		panelCentro.add(Box.createVerticalStrut(8));
+		panelCentro.add(chkRel);
+
+		// ===== BOTONES =====
+
+		JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+
+		panelBotones.setBackground(COLOR_FONDO);
+
+		JButton btnExportar = crearBotonDialogo("Exportar");
+
+		JButton btnCancelar = crearBotonDialogo("Cancelar");
+
+		panelBotones.add(btnExportar);
+		panelBotones.add(btnCancelar);
+
+		btnCancelar.addActionListener(ev -> dialogo.dispose());
+
+		btnExportar.addActionListener(ev -> {
+
+			boolean algoExportado = false;
+
+			if (chk10.isSelected()) {
+
+				exportarPDF(txtMenos10, "Resultados 10 Menos");
+
+				algoExportado = true;
+			}
+
+			if (chkGrupos.isSelected()) {
+
+				exportarPDF(txtGrupos, "Grupos de Cuatro");
+
+				algoExportado = true;
+			}
+
+			if (chkRel.isSelected()) {
+
+				exportarPDF(txtRelaciones, "Relaciones");
+
+				algoExportado = true;
+			}
+
+			if (!algoExportado) {
+
+				AlertasUI.mostrarAlerta(this, "Seleccione al menos una opción.");
+
+				return;
+			}
+
+			dialogo.dispose();
+
+		});
+
+		dialogo.add(titulo, BorderLayout.NORTH);
+
+		dialogo.add(panelCentro, BorderLayout.CENTER);
+
+		dialogo.add(panelBotones, BorderLayout.SOUTH);
+
+		dialogo.setVisible(true);
+	}
+
+	private JButton crearBotonDialogo(String texto) {
+
+		JButton boton = new JButton(texto);
+
+		boton.setFont(new Font("Arial", Font.BOLD, 15));
+
+		boton.setBackground(COLOR_PRIMARIO);
+
+		boton.setForeground(COLOR_TEXTAREAS);
+
+		boton.setFocusPainted(false);
+
+		boton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+		boton.addMouseListener(new MouseAdapter() {
+
+			public void mouseEntered(MouseEvent e) {
+
+				boton.setBackground(COLOR_ACENTO);
+			}
+
+			public void mouseExited(MouseEvent e) {
+
+				boton.setBackground(COLOR_PRIMARIO);
+			}
+		});
+
+		return boton;
+	}
+
+	private JCheckBox crearCheckBox(String texto) {
+
+		return new CheckBoxEstilo(texto);
+	}
+
+	private class CheckBoxEstilo extends JCheckBox {
+
+		public CheckBoxEstilo(String texto) {
+			super(texto);
+
+			setOpaque(false);
+			setFocusPainted(false);
+			setFont(new Font("Arial", Font.BOLD, 15));
+			setForeground(COLOR_TEXTO);
+			setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+			setPreferredSize(new Dimension(250, 28));
+			setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
+		}
+
+		@Override
+		protected void paintComponent(Graphics g) {
+
+			Graphics2D g2 = (Graphics2D) g.create();
+
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+			int size = 18;
+			int y = (getHeight() - size) / 2;
+
+			// Caja exterior
+			if (isEnabled()) {
+				g2.setColor(COLOR_PRIMARIO);
+			} else {
+				g2.setColor(Color.GRAY);
+			}
+
+			g2.fillRoundRect(0, y, size, size, 8, 8);
+
+			// Estado seleccionado
+			if (isSelected()) {
+
+				g2.setColor(Color.WHITE);
+
+				g2.setStroke(new BasicStroke(2.5f));
+
+				g2.drawLine(4, y + 9, 8, y + 13);
+				g2.drawLine(8, y + 13, 14, y + 5);
+			}
+
+			// Texto
+			g2.setColor(isEnabled() ? COLOR_TEXTO : Color.GRAY);
+
+			g2.setFont(getFont());
+
+			FontMetrics fm = g2.getFontMetrics();
+
+			int textX = size + 12;
+			int textY = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+
+			g2.drawString(getText(), textX, textY);
+
+			g2.dispose();
+		}
+	}
 }

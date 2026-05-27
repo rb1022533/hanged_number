@@ -29,7 +29,7 @@ public class InterfazBienvenida extends JFrame {
 		}
 //        setIconImage(iconUrl.getFile());
 
-		setTitle("Bienvenido a Ahorcado Numérico");
+		setTitle("Bienvenido a Hanged Number");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 

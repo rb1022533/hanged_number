@@ -12,6 +12,8 @@ public class AlertasUI {
 
 	public static void mostrarAlerta(Component parent, String mensaje) {
 
+		SonidoUtils.play("/sounds/alert.wav");
+
 		// Cursor de mano
 		MouseAdapter cursorMano = new MouseAdapter() {
 			@Override

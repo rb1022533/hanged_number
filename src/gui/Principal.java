@@ -20,7 +20,9 @@ public class Principal {
 		
 		try {
 	        javax.swing.SwingUtilities.invokeAndWait(() -> {
-	            new InterfazBienvenida().setVisible(true);
+	        	SwingUtilities.invokeLater(() -> {
+	                new InterfazBienvenida().setVisible(true);
+	            });
 	        });
 	    } catch (Exception e) {
 	        e.printStackTrace();

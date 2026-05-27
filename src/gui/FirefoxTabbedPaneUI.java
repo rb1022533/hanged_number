@@ -36,18 +36,21 @@ public class FirefoxTabbedPaneUI extends BasicTabbedPaneUI {
 		tabPane.addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				int index = tabForCoordinate(tabPane, e.getX(), e.getY());
-				int selected = tabPane.getSelectedIndex();
 
-				// Solo hover para pestañas inactivas
-				if (index == selected || index == -1) {
-					hoverTab = -1; // activa o fuera → sin hover
-				} else {
-					hoverTab = index; // hover para inactivas
-				}
+				if (tabPane == null || tabPane.getTabCount() == 0) return;
 
-				tabPane.repaint();
+			    int index = tabForCoordinate(tabPane, e.getX(), e.getY());
+			    int selected = tabPane.getSelectedIndex();
 
+			    if (index == selected || index == -1) {
+			        hoverTab = -1;
+			    } else {
+			        hoverTab = index;
+			    }
+
+			    if (tabPane != null && tabPane.getTabCount() > 0) {
+			        tabPane.repaint();
+			    }
 			}
 
 		});
@@ -57,7 +60,9 @@ public class FirefoxTabbedPaneUI extends BasicTabbedPaneUI {
 			@Override
 			public void mouseExited(MouseEvent e) {
 				hoverTab = -1; // quitar hover
-				tabPane.repaint();
+				if (tabPane != null) {
+				    tabPane.repaint();
+				}
 			}
 		});
 

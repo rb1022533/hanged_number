@@ -31,8 +31,10 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 
 import gui.AlertasUI;
+import gui.tabs.DetachableTabbedPane;
 
 public class InterfazAhorcado extends JFrame {
+	private DetachableTabbedPane detacheableTabbedPane;
 	private JTable tablaNumeros;
 	private int hoveredRow = -1;
 	private int hoveredCol = -1;
@@ -41,7 +43,7 @@ public class InterfazAhorcado extends JFrame {
 	private JTextArea areaResultados;
 	private JTextArea areaHistorial;
 	private JButton botonReiniciar;
-	private JButton botonVerMenosDiez;
+	private JButton botonOperaciones;
 	private JButton btnExportarPDF;
 	private JButton botonCerrarDialogo;
 	private MouseAdapter cursorMano;
@@ -247,6 +249,11 @@ public class InterfazAhorcado extends JFrame {
 	}
 
 	public InterfazAhorcado() {
+
+		detacheableTabbedPane = new DetachableTabbedPane();
+
+		// aquí agregas tus pestañas
+		add(detacheableTabbedPane);
 
 		URL iconUrl = getClass().getResource("/gui/favicon.png");
 //		System.out.println(iconUrl != null ? "Cargado: " + iconUrl : "❌ No encontrado");
@@ -543,26 +550,28 @@ public class InterfazAhorcado extends JFrame {
 
 		botonReiniciar.addMouseListener(cursorMano);
 
-		botonVerMenosDiez = new JButton("Ver 10 Menos");
-		botonVerMenosDiez.setFont(new Font("Arial", Font.BOLD, 16));
-		botonVerMenosDiez.setBackground(COLOR_PRIMARIO);
-		botonVerMenosDiez.setForeground(COLOR_FONDO);
-		botonVerMenosDiez.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+		botonOperaciones = new JButton("Operaciones");
+		botonOperaciones.setFont(new Font("Arial", Font.BOLD, 16));
+		botonOperaciones.setBackground(COLOR_PRIMARIO);
+		botonOperaciones.setForeground(COLOR_FONDO);
+		botonOperaciones.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+		botonOperaciones.setToolTipText("Ver 10 menos, grupos de cuatro y Relaciones entre números seleccionados");
 
 		// Hover
-		botonVerMenosDiez.addMouseListener(new java.awt.event.MouseAdapter() {
+		botonOperaciones.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				botonVerMenosDiez.setBackground(COLOR_ACENTO); // cambia al color hover
+				botonOperaciones.setBackground(COLOR_ACENTO); // cambia al color hover
 			}
 
 			@Override
 			public void mouseExited(java.awt.event.MouseEvent evt) {
-				botonVerMenosDiez.setBackground(COLOR_PRIMARIO); // vuelve al color original
+				botonOperaciones.setBackground(COLOR_PRIMARIO); // vuelve al color original
 			}
 
 		});
-		botonVerMenosDiez.addMouseListener(cursorMano);
+		botonOperaciones.addMouseListener(cursorMano);
 
 		// 1️⃣ Cargar recurso de forma segura
 		URL iconUrl1 = getClass().getResource("/gui/iconoExportarPdf.png");
@@ -620,7 +629,7 @@ public class InterfazAhorcado extends JFrame {
 				}
 			}
 		});
-		botonVerMenosDiez.addActionListener(e -> {
+		botonOperaciones.addActionListener(e -> {
 			Set<Integer> seleccionados = obtenerNumerosSeleccionados();
 			if (seleccionados.isEmpty()) {
 				// Crear un botón personalizado para el JOptionPane
@@ -631,7 +640,8 @@ public class InterfazAhorcado extends JFrame {
 
 			int numeroAhorcado = 0;
 			if (ventanaMenosDiez == null || !ventanaMenosDiez.isVisible()) {
-				ventanaMenosDiez = new MostrarMenosDiez(obtenerNumerosSeleccionados(), this, numeroAhorcado);
+				ventanaMenosDiez = new MostrarMenosDiez(obtenerNumerosSeleccionados(), this, numeroAhorcado,
+						detacheableTabbedPane);
 
 				// 👇 AQUÍ agregas el listener
 				ventanaMenosDiez.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -650,10 +660,10 @@ public class InterfazAhorcado extends JFrame {
 		botonReiniciar.registerKeyboardAction(e -> botonReiniciar.doClick(),
 				KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED);
 
-		JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
 		panelBotones.setBackground(COLOR_FONDO);
 		panelBotones.add(btnExportarPDF);
-		panelBotones.add(botonVerMenosDiez);
+		panelBotones.add(botonOperaciones);
 		panelBotones.add(botonReiniciar);
 
 		// Organizar componentes en el frame
@@ -1685,6 +1695,9 @@ public class InterfazAhorcado extends JFrame {
 	}
 
 	public void reiniciarJuego() {
+
+		detacheableTabbedPane.cerrarVentanasDetacadas();
+
 		// Limpiar matriz de selección (visual y lógica)
 		for (int i = 0; i < seleccionados.length; i++) {
 			for (int j = 0; j < seleccionados[i].length; j++) {

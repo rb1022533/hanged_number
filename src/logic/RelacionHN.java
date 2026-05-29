@@ -160,7 +160,12 @@ public class RelacionHN {
 		if (menos1)
 			sb.append("(").append(valor - 1).append(") ");
 
-		sb.append(valor);
+		// NUEVA LÓGICA DEL VALOR BASE
+		if (exacto) {
+			sb.append("[").append(valor).append("]");
+		} else {
+			sb.append(valor);
+		}
 
 		if (mas1)
 			sb.append(" (").append(valor + 1).append(")");

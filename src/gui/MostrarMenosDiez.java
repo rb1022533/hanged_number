@@ -122,7 +122,7 @@ public class MostrarMenosDiez extends JFrame {
 		UIManager.put("TabbedPane.contentOpaque", false);
 
 		// Pestaña 1 - Menos Diez
-		pestañas.addTab("10 Menos", scrollPaneArea);
+		pestañas.addTab("Menos 10", scrollPaneArea);
 
 		// Pestaña 2 - Otros resultados (por ahora vacía)
 		JTextArea areaGruposDeCuatro = new JTextArea();
@@ -659,7 +659,7 @@ public class MostrarMenosDiez extends JFrame {
 
 		JCheckBox chkTodo = crearCheckBox("Seleccionar todo");
 
-		JCheckBox chk10 = crearCheckBox("10 Menos");
+		JCheckBox chk10 = crearCheckBox("Menos 10");
 
 		JCheckBox chkGrupos = crearCheckBox("Grupos de Cuatro");
 
@@ -694,7 +694,7 @@ public class MostrarMenosDiez extends JFrame {
 
 		// ===== BOTONES =====
 
-		JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+		JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
 		panelBotones.setBackground(COLOR_FONDO);
 
@@ -713,7 +713,7 @@ public class MostrarMenosDiez extends JFrame {
 
 			if (chk10.isSelected()) {
 
-				exportarPDF(txtMenos10, "Resultados 10 Menos");
+				exportarPDF(txtMenos10, "Resultados Menos 10");
 
 				algoExportado = true;
 			}

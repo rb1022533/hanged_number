@@ -556,7 +556,7 @@ public class InterfazAhorcado extends JFrame {
 		botonOperaciones.setForeground(COLOR_FONDO);
 		botonOperaciones.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-		botonOperaciones.setToolTipText("Ver 10 menos, grupos de cuatro y Relaciones entre números seleccionados");
+		botonOperaciones.setToolTipText("Ver menos 10, grupos de cuatro y Relaciones entre números seleccionados");
 
 		// Hover
 		botonOperaciones.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -660,7 +660,7 @@ public class InterfazAhorcado extends JFrame {
 		botonReiniciar.registerKeyboardAction(e -> botonReiniciar.doClick(),
 				KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED);
 
-		JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+		JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		panelBotones.setBackground(COLOR_FONDO);
 		panelBotones.add(btnExportarPDF);
 		panelBotones.add(botonOperaciones);
